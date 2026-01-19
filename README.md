@@ -122,6 +122,49 @@ This approach lets you:
 
 ---
 
+## Agentic loops
+
+Agents in this collection, as an example, use a centralized `.agent-info/` directory structure for task tracking and audit outputs. This convention works across all platforms (Cursor, Claude, Gemini).
+
+### Directory Structure
+
+When running agent loops it's a good idea to have a task queuing system in place.  This _could_ help the AI by breaking down tasks and keeping context windows clean; but it also makes it easier to keep track of what the AI is doing as the human developer.
+
+```
+<your-project>/.agent-info/
+├── tasks/
+│   ├── pending/          # Tasks waiting to be picked up
+│   ├── in_progress/      # Currently being worked on
+│   └── done/             # Completed tasks
+└── audits/
+    └── TAILWIND_AUDIT.md # Audit reports
+```
+
+### How It Works
+
+1. **Multi-Agent Orchestrator** breaks down complex requests into discrete task files
+2. Each task file is placed in `.agent-info/tasks/pending/`
+3. Sub-agents (django, vue3, tailwind) pick up tasks and move them through the workflow
+4. Audit agents (like tailwind-css-auditor) output reports to `.agent-info/audits/`
+
+### Task File Format
+
+Each task is a descriptively-named markdown file (e.g., `add-user-dashboard-api.md`) containing:
+- Target agent/skill
+- Goal and acceptance criteria
+- Context and dependencies
+- Expected outputs
+- Ready-to-run prompt
+
+### Benefits
+
+- **Cross-platform**: Works with Cursor, Claude Code, Gemini CLI, etc.
+- **Session continuity**: Pick up where you left off across chat sessions
+- **Parallel work**: Multiple agents can work on different tasks
+- **Audit trail**: Clear history of what was done and why
+
+---
+
 ## Documentation
 
 For detailed guides on creating and managing agents:
@@ -159,9 +202,3 @@ For detailed guides on creating and managing agents:
 - [Cursor Documentation](https://docs.cursor.com/)
 - [Claude Code Documentation](https://code.claude.com/docs)
 - [Gemini CLI Repository](https://github.com/google-gemini/gemini-cli)
-
----
-
-## License
-
-MIT - Use these agents however you like. Attribution appreciated but not required.

@@ -92,7 +92,7 @@ Identify and recommend consolidating to:
 
 ## Output Format
 
-Output findings to a TAILWIND_AUDIT.md file.  This should be overwritten each time if it already exists.  We'll assume older audits are outdated.
+Output findings to `.agent-info/audits/TAILWIND_AUDIT.md` file. Create the `.agent-info/audits/` directory if it doesn't exist. This file should be overwritten each time if it already exists. We'll assume older audits are outdated.
 
 Always structure your audit report as follows:
 
@@ -141,6 +141,45 @@ Provide 5-8 actionable rules the team can follow, e.g.:
 - [ ] If a utility cluster appears 3+ times, extract to component class
 - [ ] Use spacing scale: 2, 4, 6, 8, 12, 16, 24 only
 - [ ] New variants use modifiers (--variant), not new blocks
+
+## Optional Task Generation
+
+If the user requests it, you can generate individual task files in `.agent-info/tasks/pending/` for each high-impact consolidation. Each task file should:
+- Be descriptively named (e.g., `consolidate-button-patterns.md`)
+- Target the `tailwind-task-agent` skill
+- Include specific files to refactor
+- Reference the audit report for context
+- Contain clear acceptance criteria
+
+Task file format:
+```markdown
+# Task: [Consolidation Name]
+
+**Target Skill:** tailwind-task-agent
+**Created:** [YYYY-MM-DD]
+**Priority:** [number based on audit ranking]
+
+## Goal
+Consolidate [pattern name] across [X] files to improve maintainability and reduce class duplication.
+
+## Acceptance Criteria
+- [ ] BEM component class created in appropriate CSS file
+- [ ] All [X] instances updated to use new class
+- [ ] Visual appearance unchanged (or documented if changed)
+- [ ] Template readability improved
+
+## Context
+This task is based on the Tailwind CSS audit findings in `.agent-info/audits/TAILWIND_AUDIT.md`.
+
+[Include relevant details from the audit about this specific pattern]
+
+## Expected Outputs
+- Updated CSS file with new BEM component
+- Updated template files: [list specific files]
+
+## Skill Prompt
+[The exact prompt for tailwind-task-agent to execute this consolidation]
+```
 
 ## Quality Standards
 

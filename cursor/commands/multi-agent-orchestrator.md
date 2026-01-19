@@ -1,1 +1,1 @@
-refer to ~/.cursor/skills/multi-agent-orchestrator/SKILL.md
+run the [multi agent orchestrator](../agents/multi-agent-orchestrator.md) with user input
