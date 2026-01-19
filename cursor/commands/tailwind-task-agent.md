@@ -1,0 +1,1 @@
+refer to ~/.cursor/skills/tailwind-task-agent/SKILL.md
