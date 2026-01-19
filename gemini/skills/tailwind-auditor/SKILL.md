@@ -1,5 +1,5 @@
 ---
-name: tailwind-css-auditor
+name: tailwind-auditor
 description: |
   Use this skill when you need to audit and improve Tailwind CSS usage in an existing project. This includes identifying class duplication, consolidating repetitive patterns into BEM components using @apply, standardizing spacing/typography/design tokens, and improving template readability. Specifically use this skill when:
 
@@ -14,27 +14,27 @@ description: |
   <example>
   Context: User has completed a feature and wants to clean up the Tailwind usage before merging.
   user: "I just finished the dashboard feature. Can you review the Tailwind CSS usage?"
-  assistant: "I'll use the tailwind-css-auditor skill to review the Tailwind CSS patterns in your dashboard feature and identify consolidation opportunities."
+  assistant: "I'll use the tailwind-auditor skill to review the Tailwind CSS patterns in your dashboard feature and identify consolidation opportunities."
   <commentary>
-  Since the user wants to review Tailwind CSS usage in completed code, use the tailwind-css-auditor skill to analyze patterns and propose refactors.
+  Since the user wants to review Tailwind CSS usage in completed code, use the tailwind-auditor skill to analyze patterns and propose refactors.
   </commentary>
   </example>
 
   <example>
   Context: User notices their project has inconsistent button styles across components.
   user: "Our buttons look inconsistent and we have different Tailwind classes everywhere. Can you help standardize them?"
-  assistant: "I'll launch the tailwind-css-auditor skill to audit your button patterns and propose a consolidated BEM component approach."
+  assistant: "I'll launch the tailwind-auditor skill to audit your button patterns and propose a consolidated BEM component approach."
   <commentary>
-  The user has identified a specific styling inconsistency issue. Use the tailwind-css-auditor skill to analyze all button instances and create a unified component abstraction.
+  The user has identified a specific styling inconsistency issue. Use the tailwind-auditor skill to analyze all button instances and create a unified component abstraction.
   </commentary>
   </example>
 
   <example>
   Context: User wants to improve code quality before a major release.
   user: "We're preparing for v2.0 release. Our CSS has gotten messy - lots of duplication."
-  assistant: "I'll use the tailwind-css-auditor skill to do a full pass on the codebase and recommend a cleanup strategy."
+  assistant: "I'll use the tailwind-auditor skill to do a full pass on the codebase and recommend a cleanup strategy."
   <commentary>
-  Major refactoring or quality passes are perfect for the tailwind-css-auditor skill.
+  Major refactoring or quality passes are perfect for the tailwind-auditor skill.
   </commentary>
   </example>
 ---
@@ -92,7 +92,7 @@ Identify and recommend consolidating to:
 
 ## Output Format
 
-Output findings to `.agent-info/audits/TAILWIND_AUDIT.md` file. Create the `.agent-info/audits/` directory if it doesn't exist. This file should be overwritten each time if it already exists. We'll assume older audits are outdated.
+Output findings to `.agent-info/audits/TAILWIND_AUDIT_YYYYMMDD_HHMMSS.md` file (e.g., `.agent-info/audits/TAILWIND_AUDIT_20260118_143022.md`). Create the `.agent-info/audits/` directory if it doesn't exist. Use the current date and time to generate a unique filename for each audit run.
 
 Always structure your audit report as follows:
 
@@ -169,7 +169,7 @@ Consolidate [pattern name] across [X] files to improve maintainability and reduc
 - [ ] Template readability improved
 
 ## Context
-This task is based on the Tailwind CSS audit findings in `.agent-info/audits/TAILWIND_AUDIT.md`.
+This task is based on the Tailwind CSS audit findings in the most recent `.agent-info/audits/TAILWIND_AUDIT_*.md` file.
 
 [Include relevant details from the audit about this specific pattern]
 

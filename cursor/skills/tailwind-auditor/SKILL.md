@@ -1,5 +1,5 @@
 ---
-name: tailwind-css-auditor
+name: tailwind-auditor
 description: Use this skill when you need to audit and improve Tailwind CSS usage in an existing project. This includes identifying class duplication, consolidating repetitive patterns into BEM components using @apply, standardizing spacing/typography/design tokens, and improving template readability. Specifically use this skill when you want to reduce class sprawl, identify component abstractions, establish consistent design token usage, or when templates have become hard to read due to long class strings.
 ---
 
@@ -58,7 +58,7 @@ Identify and recommend consolidating to:
 
 ## Output Format
 
-Output findings to `.agent-info/audits/TAILWIND_AUDIT.md` file. Create the `.agent-info/audits/` directory if it doesn't exist. This file should be overwritten each time if it already exists. We'll assume older audits are outdated.
+Output findings to `.agent-info/audits/TAILWIND_AUDIT_YYYYMMDD_HHMMSS.md` file (e.g., `.agent-info/audits/TAILWIND_AUDIT_20260118_143022.md`). Create the `.agent-info/audits/` directory if it doesn't exist. Use the current date and time to generate a unique filename for each audit run.
 
 Always structure your audit report as follows:
 
@@ -135,7 +135,7 @@ Consolidate [pattern name] across [X] files to improve maintainability and reduc
 - [ ] Template readability improved
 
 ## Context
-This task is based on the Tailwind CSS audit findings in `.agent-info/audits/TAILWIND_AUDIT.md`.
+This task is based on the Tailwind CSS audit findings in the most recent `.agent-info/audits/TAILWIND_AUDIT_*.md` file.
 
 [Include relevant details from the audit about this specific pattern]
 

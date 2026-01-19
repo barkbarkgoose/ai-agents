@@ -137,7 +137,7 @@ When running agent loops it's a good idea to have a task queuing system in place
 │   ├── in_progress/      # Currently being worked on
 │   └── done/             # Completed tasks
 └── audits/
-    └── TAILWIND_AUDIT.md # Audit reports
+    └── TAILWIND_AUDIT_*.md # Timestamped audit reports
 ```
 
 ### How It Works
@@ -145,7 +145,7 @@ When running agent loops it's a good idea to have a task queuing system in place
 1. **Multi-Agent Orchestrator** breaks down complex requests into discrete task files
 2. Each task file is placed in `.agent-info/tasks/pending/`
 3. Sub-agents (django, vue3, tailwind) pick up tasks and move them through the workflow
-4. Audit agents (like tailwind-css-auditor) output reports to `.agent-info/audits/`
+4. Audit agents (like tailwind-auditor) output timestamped reports to `.agent-info/audits/`
 
 ### Task File Format
 

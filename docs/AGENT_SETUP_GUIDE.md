@@ -110,7 +110,7 @@ Claude Code uses **Agents** to handle specialized tasks. Agents are defined with
 ~/.claude/agents/
 ├── django-backend-dev.md
 ├── vue3-typescript-agent.md
-└── tailwind-css-auditor.md
+└── tailwind-auditor.md
 ```
 
 **Key points:**
@@ -160,8 +160,8 @@ Why this agent is appropriate for this request.
 
 ```yaml
 ---
-name: tailwind-css-auditor
-description: Use this agent when you need to audit and improve Tailwind CSS usage in an existing project. This includes identifying class duplication, consolidating repetitive patterns into BEM components using @apply, standardizing spacing/typography/design tokens, and improving template readability.\n\n<example>\nContext: User has completed a feature and wants to clean up the Tailwind usage before merging.\nuser: "I just finished the dashboard feature. Can you review the Tailwind CSS usage?"\nassistant: "I'll use the tailwind-css-auditor agent to review the Tailwind CSS patterns in your dashboard feature and identify consolidation opportunities."\n<commentary>\nSince the user wants to review Tailwind CSS usage in completed code, use the tailwind-css-auditor agent to analyze patterns and propose refactors.\n</commentary>\n</example>
+name: tailwind-auditor
+description: Use this agent when you need to audit and improve Tailwind CSS usage in an existing project. This includes identifying class duplication, consolidating repetitive patterns into BEM components using @apply, standardizing spacing/typography/design tokens, and improving template readability.\n\n<example>\nContext: User has completed a feature and wants to clean up the Tailwind usage before merging.\nuser: "I just finished the dashboard feature. Can you review the Tailwind CSS usage?"\nassistant: "I'll use the tailwind-auditor agent to review the Tailwind CSS patterns in your dashboard feature and identify consolidation opportunities."\n<commentary>\nSince the user wants to review Tailwind CSS usage in completed code, use the tailwind-auditor agent to analyze patterns and propose refactors.\n</commentary>\n</example>
 tools: Glob, Grep, Read, Write
 model: sonnet
 color: yellow
@@ -202,7 +202,7 @@ Gemini CLI supports both **Agents** and **Skills**, giving you flexibility in ho
 ~/.gemini/agents/
 ├── django-backend-dev.md
 ├── vue3-typescript-agent.md
-└── tailwind-css-auditor.md
+└── tailwind-auditor.md
 ```
 
 **Skills:**
@@ -239,12 +239,12 @@ Gemini CLI supports both **Agents** and **Skills**, giving you flexibility in ho
 
 ### Gemini Example
 
-**Agent (`gemini/agents/tailwind-css-auditor.md`):**
+**Agent (`gemini/agents/tailwind-auditor.md`):**
 
 ```yaml
 ---
-name: tailwind-css-auditor
-description: Use this agent when you need to audit and improve Tailwind CSS usage in an existing project.\n\n<example>\nContext: User notices their project has inconsistent button styles.\nuser: "Our buttons look inconsistent everywhere. Can you help?"\nassistant: "I'll launch the tailwind-css-auditor agent to audit your button patterns."\n</example>
+name: tailwind-auditor
+description: Use this agent when you need to audit and improve Tailwind CSS usage in an existing project.\n\n<example>\nContext: User notices their project has inconsistent button styles.\nuser: "Our buttons look inconsistent everywhere. Can you help?"\nassistant: "I'll launch the tailwind-auditor agent to audit your button patterns."\n</example>
 tools: Glob, Grep, Read, Write
 model: sonnet
 color: yellow
@@ -253,18 +253,18 @@ color: yellow
 You are an expert Tailwind CSS auditor...
 ```
 
-**Skill (`gemini/skills/tailwind-css-auditor/SKILL.md`):**
+**Skill (`gemini/skills/tailwind-auditor/SKILL.md`):**
 
 ```yaml
 ---
-name: tailwind-css-auditor
+name: tailwind-auditor
 description: |
   Use this skill when you need to audit and improve Tailwind CSS usage in an existing project.
 
   <example>
   Context: User has completed a feature and wants to clean up the Tailwind usage.
   user: "I just finished the dashboard feature. Can you review the Tailwind CSS usage?"
-  assistant: "I'll use the tailwind-css-auditor skill to review the patterns."
+  assistant: "I'll use the tailwind-auditor skill to review the patterns."
   </example>
 ---
 
