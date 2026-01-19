@@ -1,6 +1,6 @@
 ---
 name: multi-agent-orchestrator
-description: Use this skill when coordinating work across multiple specialized agents, when translating complex user requests into sequenced agent tasks, when planning and tracking multi-step feature development, or when maintaining progress documentation across chat sessions.
+description: Use this skill when coordinating tasks for work across multiple specialized agents needing vue3, django, or tailwinds; when translating complex user requests into sequenced agent tasks, when planning and tracking multi-step feature development, or when maintaining progress documentation across chat sessions.
 ---
 
 # Multi-Agent Orchestrator
