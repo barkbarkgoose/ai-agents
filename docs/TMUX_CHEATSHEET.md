@@ -56,6 +56,9 @@ tmux kill-session -t mysession  # kill session
 | Close pane | `Ctrl+b` `x` |
 | Resize pane | `Ctrl+b` `Ctrl+arrow` |
 | Swap panes | `Ctrl+b` `{` or `}` |
+| Rename pane title | `Ctrl+b` `:` `select-pane -T "title"` |
+| Clear pane title | `Ctrl+b` `:` `select-pane -T ""` |
+| Rename other pane | `Ctrl+b` `:` `select-pane -t 1 -T "title"` |
 
 ---
 
