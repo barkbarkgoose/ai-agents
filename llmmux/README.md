@@ -56,15 +56,17 @@ llmmux Session
 
 ## State Management
 
-llmmux maintains persistent state in `~/.llmmux/state/<session-name>/`:
+llmmux maintains persistent state in `~/.llmmux/state/<session-id>/`:
 
 - **handoff.md** - Human-readable narrative for LLM continuity
 - **run_state.json** - Machine-readable state index
 - **tasks.json** - Task queue and planning
-- **agents/*.last.json** - Per-agent state snapshots
+- **agents/*.last.json** - Per-agent state snapshots (name, provider, status, last_action, last_run_ts as ISO 8601 UTC)
 - **logs/*.log** - Agent output logs
 
-Artifacts are stored in `~/.llmmux/artifacts/<session-name>/`.
+Artifacts are stored in `~/.llmmux/artifacts/<session-id>/`.
+The mapping from tmux session name to session id is stored in `~/.llmmux/state/session_index.json`.
+Each orchestrator launch generates a new `<session-id>` and records the tmux session name inside `run_state.json`.
 
 ## Creating Additional Agents
 
@@ -163,6 +165,8 @@ tmux attach -t myapp
 # 8. Clean up when complete
 tmux kill-session -t myapp
 ```
+
+Tip: say “please setup handoff for the next session” to prompt the orchestrator to write `handoff.md`, `run_state.json`, and `tasks.json` for an easy resume.
 
 ## Files in this Directory
 

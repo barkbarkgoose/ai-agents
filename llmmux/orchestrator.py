@@ -10,11 +10,14 @@ Usage:
     python orchestrator.py --provider gemini --session-name my-project
 """
 import argparse
+import json
 import os
 import subprocess
 import sys
 from pathlib import Path
 from shutil import copy2
+from datetime import datetime, timezone
+from uuid import uuid4
 
 from dotenv import load_dotenv
 
@@ -24,6 +27,7 @@ LLMMUX_HOME = Path.home() / ".llmmux"
 REQUIRED_FILES = [
     "orchestrator.py",
     "create_agent.py",
+    "INIT_AGENT.md",
     "INIT_ORCHESTRATOR.md",
     "TMUX_CHEATSHEET.md",
     ".default_env",
@@ -265,13 +269,51 @@ def create_session_state_dirs(session_name: str):
     (artifacts_dir / "patches").mkdir(exist_ok=True)
     (artifacts_dir / "reports").mkdir(exist_ok=True)
 
+    return state_dir, artifacts_dir
 
-def launch_orchestrator_session(session_name: str, project_root: str, provider: str):
+
+def generate_session_id() -> str:
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    return f"session_{timestamp}_{uuid4().hex[:8]}"
+
+
+def update_session_index(tmux_session_name: str, session_id: str):
+    index_path = LLMMUX_HOME / "state" / "session_index.json"
+    if index_path.exists():
+        with open(index_path, "r") as f:
+            index = json.load(f)
+    else:
+        index = {}
+
+    index[tmux_session_name] = session_id
+    with open(index_path, "w") as f:
+        json.dump(index, f, indent=2)
+
+
+def initialize_run_state(state_dir: Path, session_id: str, tmux_session_name: str, project_root: str, provider: str):
+    run_state = {
+        "run_id": session_id,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "repo_root": project_root,
+        "tmux_session_name": tmux_session_name,
+        "provider": provider,
+        "agents": {},
+        "artifacts": [],
+        "task_queue": [],
+        "constraints": []
+    }
+    with open(state_dir / "run_state.json", "w") as f:
+        json.dump(run_state, f, indent=2)
+
+
+def launch_orchestrator_session(session_name: str, session_id: str, project_root: str, provider: str):
     """
     Create tmux session and launch orchestrator agent
     """
     # Create state directories
-    create_session_state_dirs(session_name)
+    state_dir, _ = create_session_state_dirs(session_id)
+    update_session_index(session_name, session_id)
+    initialize_run_state(state_dir, session_id, session_name, project_root, provider)
     
     # Create tmux session
     print(f"\nCreating tmux session '{session_name}'...")
@@ -304,7 +346,8 @@ def launch_orchestrator_session(session_name: str, project_root: str, provider: 
     print(f"  tmux attach -t {session_name}")
     print(f"\nOr list all sessions:")
     print(f"  tmux ls")
-    print(f"\nState directory: {LLMMUX_HOME / 'state' / session_name}")
+    print(f"\nState directory: {LLMMUX_HOME / 'state' / session_id}")
+    print(f"Session ID: {session_id}")
 
 
 def parse_args():
@@ -370,9 +413,10 @@ def main():
     
     project_root = get_project_root(args.project_root)
     provider = get_provider(args.provider)
+    session_id = generate_session_id()
     
     # Launch the orchestrator
-    launch_orchestrator_session(session_name, project_root, provider)
+    launch_orchestrator_session(session_name, session_id, project_root, provider)
 
 
 if __name__ == "__main__":

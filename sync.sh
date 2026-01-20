@@ -62,6 +62,11 @@ mkdir -p ~/.llmmux/artifacts
 # Sync core files, excluding state and artifacts (preserve user data)
 rsync -av --exclude='state' --exclude='artifacts' ./llmmux/ ~/.llmmux/
 
+# Ensure shared agent init file is present
+if [ -f ./llmmux/INIT_AGENT.md ]; then
+  cp ./llmmux/INIT_AGENT.md ~/.llmmux/INIT_AGENT.md
+fi
+
 # Set up Python virtual environment
 echo "  -> Setting up Python virtual environment..."
 if [ ! -d ~/.llmmux/venv ]; then

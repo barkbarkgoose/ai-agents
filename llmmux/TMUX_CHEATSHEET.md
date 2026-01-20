@@ -227,7 +227,7 @@ llmmux maintains state in `~/.llmmux/state/<session-name>/`:
 - `handoff.md` - Human-readable progress narrative
 - `run_state.json` - Machine-readable state index
 - `tasks.json` - Task queue and planning
-- `agents/*.last.json` - Per-agent state snapshots
+- `agents/*.last.json` - Per-agent state snapshots (status, last_action, last_run_ts)
 - `logs/*.log` - Agent output logs
 
 ### Useful llmmux Commands

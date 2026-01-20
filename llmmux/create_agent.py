@@ -10,6 +10,7 @@ Usage:
     python create_agent.py --name django-agent --provider codex --skill django-backend-dev
 """
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -21,6 +22,7 @@ from dotenv import load_dotenv
 # Constants
 LLMMUX_HOME = Path.home() / ".llmmux"
 VALID_PROVIDERS = ["gemini", "agent", "codex", "claude", "opencode"]
+INIT_AGENT_FILENAME = "INIT_AGENT.md"
 
 
 def load_environment():
@@ -33,6 +35,20 @@ def load_environment():
     
     if user_env.exists():
         load_dotenv(user_env, override=True)
+
+
+def load_agent_init_text() -> str:
+    """Load shared agent instructions from INIT_AGENT.md if present."""
+    candidates = [
+        LLMMUX_HOME / INIT_AGENT_FILENAME,
+        Path(__file__).resolve().parent / INIT_AGENT_FILENAME,
+    ]
+
+    for path in candidates:
+        if path.exists():
+            return path.read_text().strip()
+
+    return ""
 
 
 def get_current_session() -> str:
@@ -60,11 +76,18 @@ def get_current_session() -> str:
 
 def session_exists(session_name: str) -> bool:
     """Check if a tmux session exists"""
+    # Use list-sessions instead of has-session for more reliable detection
     result = subprocess.run(
-        ["tmux", "has-session", "-t", session_name],
-        capture_output=True
+        ['tmux', 'list-sessions', '-F', '#{session_name}'],
+        capture_output=True,
+        text=True
     )
-    return result.returncode == 0
+
+    if result.returncode != 0:
+        return False
+
+    sessions = result.stdout.strip().split("\n")
+    return session_name in sessions
 
 
 def get_session_name(args_session: str = None) -> str:
@@ -273,9 +296,8 @@ def create_agent_window(session_name: str, agent_name: str, provider: str, promp
     ], check=True)
     
     # Create agent state file
-    state_dir = LLMMUX_HOME / "state" / session_name / "agents"
+    state_dir = resolve_state_dir(session_name) / "agents"
     if state_dir.exists():
-        import json
         from datetime import datetime
         
         agent_state = {
@@ -283,7 +305,9 @@ def create_agent_window(session_name: str, agent_name: str, provider: str, promp
             "provider": provider,
             "prompt": prompt,
             "created_at": datetime.now().isoformat(),
-            "status": "running"
+            "status": "running",
+            "last_action": "created",
+            "last_run_ts": datetime.now().isoformat()
         }
         
         state_file = state_dir / f"{agent_name}.last.json"
@@ -353,6 +377,17 @@ Provider Skills:
     return parser.parse_args()
 
 
+def resolve_state_dir(session_name: str) -> Path:
+    index_path = LLMMUX_HOME / "state" / "session_index.json"
+    if index_path.exists():
+        with open(index_path, "r") as f:
+            index = json.load(f)
+        session_id = index.get(session_name)
+        if session_id:
+            return LLMMUX_HOME / "state" / session_id
+    return LLMMUX_HOME / "state" / session_name
+
+
 def main():
     """Main entry point"""
     args = parse_args()
@@ -365,6 +400,13 @@ def main():
     agent_name = get_agent_name(args.name)
     provider = get_provider(args.provider)
     prompt = get_prompt_text(args.prompt, args.skill)
+    state_dir = resolve_state_dir(session_name)
+    agent_state_path = state_dir / "agents" / f"{agent_name}.last.json"
+    init_text = load_agent_init_text()
+    if init_text:
+        prompt = f"{init_text}\n\nAgent state file: {agent_state_path}\n\n---\n\n{prompt}"
+    else:
+        prompt = f"Agent state file: {agent_state_path}\n\n{prompt}"
     
     # Create the agent window
     create_agent_window(session_name, agent_name, provider, prompt)
