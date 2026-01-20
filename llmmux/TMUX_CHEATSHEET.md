@@ -178,3 +178,80 @@ Sessions contain Windows contain Panes
 4. **Use `send-keys`** — lets Python orchestrator communicate with agents
 5. **Use `capture-pane`** — lets Python read agent output
 6. **Zoom for focus** — `Ctrl+b` `z` toggles fullscreen on a pane
+
+---
+
+## llmmux-Specific Usage
+
+### Creating an llmmux Session
+
+```bash
+# From your project directory
+cd /path/to/project
+~/.llmmux/orchestrator --provider agent
+
+# Or specify all options
+~/.llmmux/orchestrator --provider codex --session-name myproject --project-root ~/projects/myapp
+```
+
+### Adding Agents to Running Session
+
+```bash
+# From within tmux (auto-detects current session)
+~/.llmmux/create_agent --name vue-agent --skill vue3-typescript
+
+# From outside tmux (specify session)
+~/.llmmux/create_agent --name django-agent --session llmmux --prompt "Create REST API"
+
+# With specific provider
+python3 ~/.llmmux/create_agent.py --name researcher --provider gemini --prompt "Research best practices"
+```
+
+### Viewing Agent Output
+
+```bash
+# Switch to agent window
+Ctrl+b w                    # then select from list
+
+# Or use window list shortcut
+Ctrl+b '                    # then type window name
+
+# Capture output programmatically
+tmux capture-pane -t llmmux:vue-agent -p > output.txt
+```
+
+### State Files
+
+llmmux maintains state in `~/.llmmux/state/<session-name>/`:
+
+- `handoff.md` - Human-readable progress narrative
+- `run_state.json` - Machine-readable state index
+- `tasks.json` - Task queue and planning
+- `agents/*.last.json` - Per-agent state snapshots
+- `logs/*.log` - Agent output logs
+
+### Useful llmmux Commands
+
+```bash
+# List all llmmux sessions
+tmux ls | grep llmmux
+
+# Attach to specific llmmux session
+tmux attach -t llmmux
+
+# Kill llmmux session when done
+tmux kill-session -t llmmux
+
+# View state files
+cat ~/.llmmux/state/llmmux/handoff.md
+cat ~/.llmmux/state/llmmux/run_state.json
+```
+
+### Best Practices for llmmux
+
+1. **One session per project** — Use meaningful session names
+2. **Document in handoff.md** — Keep the narrative current for continuity
+3. **Update run_state.json** — Track agent status and artifacts
+4. **Check logs regularly** — Each agent writes to `logs/<agent-name>.log`
+5. **Use artifacts directory** — Save diffs, reports to `~/.llmmux/artifacts/<session>/`
+6. **Detach vs Kill** — Detach preserves running agents, kill stops everything
