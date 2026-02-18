@@ -39,7 +39,7 @@ chmod +x sync.sh
 ./sync.sh
 ```
 
-This syncs:
+This syncs **Deprecated**:
 - `./cursor/` → `~/.cursor/` (agents, commands, skills)
 - `./claude/` → `~/.claude/` (agents, commands, skills)
 - `./gemini/` → `~/.gemini/` (agents, commands, skills)
@@ -124,14 +124,14 @@ This approach lets you:
 
 ## Agentic loops
 
-Agents in this collection, as an example, use a centralized `.agent-info/` directory structure for task tracking and audit outputs. This convention works across all platforms (Cursor, Claude, Gemini).
+Agents in this collection, as an example, use a centralized `.agent-tasks/` directory structure for task tracking and audit outputs. This convention works across all platforms (Cursor, Claude, Gemini).
 
 ### Directory Structure
 
 When running agent loops it's a good idea to have a task queuing system in place.  This _could_ help the AI by breaking down tasks and keeping context windows clean; but it also makes it easier to keep track of what the AI is doing as the human developer.
 
 ```
-<your-project>/.agent-info/
+<your-project>/.agent-tasks/
 ├── tasks/
 │   ├── pending/          # Tasks waiting to be picked up
 │   ├── in_progress/      # Currently being worked on
@@ -143,9 +143,9 @@ When running agent loops it's a good idea to have a task queuing system in place
 ### How It Works
 
 1. **Multi-Agent Orchestrator** breaks down complex requests into discrete task files
-2. Each task file is placed in `.agent-info/tasks/pending/`
+2. Each task file is placed in `.agent-tasks/tasks/pending/`
 3. Sub-agents (django, vue3, tailwind) pick up tasks and move them through the workflow
-4. Audit agents (like tailwind-auditor) output timestamped reports to `.agent-info/audits/`
+4. Audit agents (like tailwind-auditor) output timestamped reports to `.agent-tasks/audits/`
 
 ### Task File Format
 
