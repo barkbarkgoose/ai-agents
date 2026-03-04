@@ -30,7 +30,7 @@ for dest_file in "${agent_files[@]}"; do
   frontmatter=$(jq -r \
     '(.defaults // {}) * (.harnesses[$h] // {}) | with_entries(select(.value != null)) | to_entries[] |
      if (.value | type) == "array" then
-       "\(.key):\n" + (.value[] | "  - \(.)") 
+       "\(.key):\n" + ([.value[] | "  - \(.)"] | join("\n"))
      else
        "\(.key): \(.value)"
      end' \
