@@ -8,7 +8,7 @@ set -euo pipefail
 
 HARNESS="${1:?Usage: $0 <harness> <dest-agents-dir>}"
 DEST_DIR="${2:?Usage: $0 <harness> <dest-agents-dir>}"
-FRONTMATTER_DIR="$(cd "$(dirname "$0")" && pwd)/agent-frontmatter"
+FRONTMATTER_DIR="$(cd "$(dirname "$0")/.." && pwd)/agent-frontmatter"
 
 if ! command -v jq &>/dev/null; then
   echo "ERROR: jq is required. Install with: brew install jq"
@@ -28,7 +28,12 @@ for dest_file in "${agent_files[@]}"; do
   [[ ! -f "$config" ]] && continue
 
   frontmatter=$(jq -r \
-    '(.defaults // {}) * (.harnesses[$h] // {}) | with_entries(select(.value != null)) | to_entries[] | "\(.key): \(.value)"' \
+    '(.defaults // {}) * (.harnesses[$h] // {}) | with_entries(select(.value != null)) | to_entries[] |
+     if (.value | type) == "array" then
+       "\(.key):\n" + (.value[] | "  - \(.)") 
+     else
+       "\(.key): \(.value)"
+     end' \
     --arg h "$HARNESS" "$config")
 
   [[ -z "$frontmatter" ]] && continue
