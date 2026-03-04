@@ -36,7 +36,7 @@ for harness in "${agent_harnesses[@]}"; do
 
   # Inject harness-specific frontmatter into synced agent files
   if [[ -d "./agents" && -d "./agent-frontmatter" ]]; then
-    bash "$SCRIPT_DIR/inject-harness-frontmatter.sh" "$harness" ~/.$harness/agents
+    bash "$SCRIPT_DIR/subscripts/inject-harness-frontmatter.sh" "$harness" ~/.$harness/agents
   fi
 done
 
