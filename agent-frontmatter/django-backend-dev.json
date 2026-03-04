@@ -1,0 +1,26 @@
+{
+  "defaults": {
+    "name": "django-backend-dev",
+    "description": "Always defer to this agent for django work."
+  },
+  "harnesses": {
+    "claude": {
+      "model": "sonnet",
+      "color": "blue"
+    },
+    "cursor": {
+      "model": "claude-sonnet-4-6"
+    },
+    "gemini": {
+      "kind": "local",
+      "tools": [
+        "read_file",
+        "grep_search"
+      ],
+      "model": "gemini-3-flash-preview",
+      "temperature": 0.7,
+      "max_turns": 10
+    },
+    "codex": {}
+  }
+}

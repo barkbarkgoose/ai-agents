@@ -1,0 +1,26 @@
+{
+  "defaults": {
+    "name": "subagent-orchestrator",
+    "description": "Whenever asked for something that is likely to require multiple steps in development, or more than just a few files or what could be handled by a basic planning mode, then always use this agent. Current setup: django (db agnostic), vue, tailwinds"
+  },
+  "harnesses": {
+    "claude": {
+      "model": "sonnet",
+      "color": "purple"
+    },
+    "cursor": {
+      "model": "claude-haiku-4.5"
+    },
+    "gemini": {
+      "kind": "local",
+      "tools": [
+        "read_file",
+        "grep_search"
+      ],
+      "model": "gemini-3-flash-preview",
+      "temperature": 0.7,
+      "max_turns": 10
+    },
+    "codex": {}
+  }
+}

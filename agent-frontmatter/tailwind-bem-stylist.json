@@ -1,0 +1,25 @@
+{
+  "defaults": {
+    "name": "tailwind-bem-stylist",
+    "description": "This agent should always be used for UI work with tailwinds. If running independently then this agent should be invoked after any other front-end agent is done."
+  },
+  "harnesses": {
+    "claude": {
+      "model": "haiku"
+    },
+    "cursor": {
+      "model": "claude-haiku-4.5"
+    },
+    "gemini": {
+      "kind": "local",
+      "tools": [
+        "read_file",
+        "grep_search"
+      ],
+      "model": "gemini-3-flash-preview",
+      "temperature": 0.7,
+      "max_turns": 10
+    },
+    "codex": {}
+  }
+}
