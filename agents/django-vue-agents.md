@@ -1,10 +1,3 @@
----
-name: django-vue-agents
-description: Use this skill when coordinating tasks for work across multiple specialized agents needing vue3, django, or tailwinds
-model: sonnet
-color: red
----
-
 ## EXECUTION
 
 The available agents are to be used based on the task that is being worked on, it is up to the orchestrator to determine which.

@@ -5,7 +5,8 @@
   },
   "harnesses": {
     "claude": {
-      "model": "haiku"
+      "model": "haiku",
+      "color": "green"
     },
     "cursor": {
       "model": "claude-haiku-4.5"

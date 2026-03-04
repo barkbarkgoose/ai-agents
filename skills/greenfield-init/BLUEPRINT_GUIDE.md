@@ -39,12 +39,14 @@ Template and rules for the `PROJECT_BLUEPRINT.md` document produced by greenfiel
 
 ## 3. Tech Stack
 
+Versions for all technologies are defined in `VERSIONS.md` — do not hardcode versions here.
+
 | Layer | Choice | Deviation from default? |
 |-------|--------|------------------------|
-| Backend | Django 5.x + DRF | No |
-| Frontend | Vue 3 + TypeScript | No |
+| Backend | Python + Django + DRF | No |
+| Frontend | Node.js LTS + Vue 3 + TypeScript | No |
 | State | Pinia | No |
-| Styling | Tailwind + SASS/BEM | No |
+| Styling | Tailwind CSS + SASS/BEM | No |
 | Database | PostgreSQL | No |
 | Auth | simplejwt | No |
 
@@ -107,6 +109,21 @@ See: `API_CONTRACT.md`
 
 First phase is always project scaffolding — both projects created, dependencies installed, dev servers confirmed running. This is the cheapest phase and catches environment issues immediately.
 
+`backend/` and `frontend/` are always treated as independent services with separate dependency management. Even when running as a monolith, they must never share a virtualenv, node_modules, or `.env`.
+
+**Backend scaffolding includes:**
+- `backend/` directory with its own `venv/` created via `uv venv --python <version>` (see `VERSIONS.md`)
+- `.python-version` file set to the pinned Python version from `VERSIONS.md`
+- Dependencies installed via `uv pip install -r requirements.txt`
+- `backend/.env` configured
+- Django dev server running at `localhost:8000`
+
+**Frontend scaffolding includes:**
+- `frontend/` directory with its own `node_modules/` via `npm install`
+- `.nvmrc` set to the Node LTS version from `VERSIONS.md`
+- `frontend/.env` configured
+- Vite dev server running at `localhost:5173`
+
 ### 2. Every Phase Produces Something Runnable
 
 Not "write 12 models", but "write User and Team models, run migrations, confirm tables exist via admin". The validation gate enforces this.
@@ -129,7 +146,7 @@ Every validation gate must be **executable**, not subjective:
 
 | Good | Bad |
 |------|-----|
-| "Run `python manage.py migrate` — no errors" | "Database is set up" |
+| "Run `uv run python manage.py migrate` — no errors" | "Database is set up" |
 | "POST to `/api/auth/login/` returns a JWT token" | "Auth works" |
 | "Vue dev server starts, home route renders" | "Frontend is done" |
 | "Task board shows seeded tasks from API" | "Feature looks good" |

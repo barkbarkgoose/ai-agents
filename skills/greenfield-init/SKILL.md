@@ -26,8 +26,12 @@ One of:
 
 Read and internalize (located in this skill folder):
 - `DEFAULT_STACK.md` — Standard tech stack and packages
+- `VERSIONS.md` — Canonical versions for all technologies
 - `BLUEPRINT_GUIDE.md` — Blueprint document structure and template
 - `CONTRACT_GUIDE.md` — API interface contract format
+
+Also read the relevant skill:
+- `environments` skill — environment setup specs for each stack layer (Python/uv, Node/npm, Docker)
 
 ### 2. Parse Input & Gap Analysis
 

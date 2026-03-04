@@ -2,11 +2,23 @@
 
 Standard stack for all greenfield projects. Use these defaults unless project requirements specifically demand otherwise. When deviating, document the reason in the blueprint.
 
+For specific versions of all technologies, see `VERSIONS.md` in this folder.
+
+## Project Structure Philosophy
+
+All projects are structured as **independent services from day one**, even when developed as a monolith:
+- `backend/` and `frontend/` are separate directories with their own dependency management, virtualenvs, and `.env` files
+- Backend uses Python/uv; frontend uses Node/npm — never share a single environment
+- This ensures the project can be split into separate repos or deployed independently without restructuring
+
 ## Backend
+
+For versions, see `VERSIONS.md`.
 
 | Layer | Technology | Notes |
 |-------|------------|-------|
-| Framework | Django 5.x | DB-agnostic ORM |
+| Language | Python | Pinned — see `VERSIONS.md` |
+| Framework | Django | LTS release — see `VERSIONS.md` |
 | API | Django REST Framework (DRF) | Serializers, viewsets, permissions |
 | Auth | djangorestframework-simplejwt | JWT tokens for API auth |
 | Database | PostgreSQL | Default; swappable via Django ORM |
@@ -20,6 +32,8 @@ Standard stack for all greenfield projects. Use these defaults unless project re
 backend/
 ├── manage.py
 ├── requirements.txt
+├── .python-version        # pins Python version for uv — see VERSIONS.md
+├── venv/                  # uv-managed virtualenv (gitignored)
 ├── config/
 │   ├── settings/
 │   │   ├── base.py
@@ -40,8 +54,11 @@ backend/
 
 ## Frontend
 
+For versions, see `VERSIONS.md`.
+
 | Layer | Technology | Notes |
 |-------|------------|-------|
+| Runtime | Node.js LTS | LTS release — see `VERSIONS.md` |
 | Framework | Vue 3 | Composition API, `<script setup>` |
 | Language | TypeScript | Strict mode |
 | Build | Vite | Default Vue scaffolding tool |
@@ -55,6 +72,7 @@ backend/
 ```
 frontend/
 ├── package.json
+├── .nvmrc                 # pins Node LTS version — see VERSIONS.md
 ├── vite.config.ts
 ├── tsconfig.json
 ├── index.html
@@ -85,9 +103,11 @@ frontend/
 
 ## Styling
 
+For versions, see `VERSIONS.md`.
+
 | Layer | Technology | Notes |
 |-------|------------|-------|
-| Utility | Tailwind CSS 3.x | Use framework classes over custom CSS |
+| Utility | Tailwind CSS | Use framework classes over custom CSS — version in `VERSIONS.md` |
 | Preprocessor | SASS/SCSS | For component-scoped styles |
 | Naming | BEM | Block__Element--Modifier convention |
 
@@ -114,6 +134,7 @@ frontend/
 | Tool | Purpose |
 |------|---------|
 | Git | Version control, feature branches |
+| uv | Python package and virtualenv management — see `environments` skill (`python-uv.md`) |
 | `.env` files | Environment-specific config (never committed) |
 | Docker (optional) | Only when service dependencies require it (Redis, Celery, etc.) |
 

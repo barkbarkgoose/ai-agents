@@ -26,6 +26,7 @@ sync_if_exists() {
 # Define harnesses by concern
 agent_harnesses=("cursor" "claude" "gemini" "codex")
 commands_harnesses=("cursor" "claude" "gemini")
+rules_harnesses=("cursor" "claude" "gemini" "codex" "kilocode")
 skills_harnesses=("cursor" "claude" "gemini" "codex" "kilocode")
 
 # Sync agents
@@ -45,6 +46,13 @@ echo "  -> Syncing commands..."
 for harness in "${commands_harnesses[@]}"; do
   echo "    -> .$harness/commands"
   sync_if_exists "./commands" ~/.$harness/commands "commands"
+done
+
+# Sync rules
+echo "  -> Syncing rules..."
+for harness in "${rules_harnesses[@]}"; do
+  echo "    -> .$harness/rules"
+  sync_if_exists "./rules" ~/.$harness/rules "rules"
 done
 
 # Sync skills
