@@ -55,7 +55,7 @@ Every task file uses this structure:
 
 ## Final Step
 **REQUIRED:** Save a copy of your full execution transcript to:
-`agent-transcripts/[task-id]-transcript.md`
+`.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/[task-id]-transcript.md`
 
 ## Notes
 [Optional: warnings, edge cases, blockers encountered]
@@ -84,7 +84,7 @@ Standard code or configuration changes.
 1. Search for the target (use Grep, Glob, or Read as needed)
 2. Make the change
 3. Verify (ReadLints, compilation, etc.)
-4. **Save transcript to `agent-transcripts/[task-id]-transcript.md`**
+4. **Save transcript to `.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/[task-id]-transcript.md`**
 5. Mark complete
 
 **When to create a sub-task:** Only if you encounter a genuine blocker that prevents completion — not as a way to defer work. Document what you completed and what remains blocked.
@@ -99,7 +99,7 @@ Investigation or audit tasks that produce findings.
 1. Execute the search/analysis defined in the task
 2. Document findings in the specified location
 3. For each actionable finding, create an implementation task in `pending/`
-4. **Save transcript to `agent-transcripts/[task-id]-transcript.md`**
+4. **Save transcript to `.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/[task-id]-transcript.md`**
 5. Inform orchestrator of all tasks created
 
 **Required output:**
@@ -222,7 +222,7 @@ Replace all occurrences of `instagram_actor_id` with `instagram_user_id` in:
 
 ## Final Step
 **REQUIRED:** Save a copy of your full execution transcript to:
-`agent-transcripts/003-migrate-instagram-actor-id-transcript.md`
+`.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/003-migrate-instagram-actor-id-transcript.md`
 ```
 
 ### If This Were a Research Task
@@ -258,7 +258,7 @@ For each file containing `instagram_actor_id`:
 
 ## Final Step
 **REQUIRED:** Save a copy of your full execution transcript to:
-`.agent-tasks/[YYYYMMDD-task-folder/agent-transcripts/003-audit-instagram-actor-id-transcript.md`
+`.agent-tasks/tasks/[YYYYMMDD-task-folder/agent-transcripts/003-audit-instagram-actor-id-transcript.md`
 ```
 
 ---

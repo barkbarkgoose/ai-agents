@@ -30,7 +30,7 @@ You are an **orchestration agent** managing a multi-task project. Your responsib
 For each task you work on:
 1. Read the task file from its current status folder
 2. Spawn a sub-agent with the task file contents
-3. **Instruct sub-agent to save transcript** to `.agent-tasks/[YYYYMMDD-task-folder]/agent-transcripts/[transcript-name].md`
+3. **Instruct sub-agent to save transcript** to `.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/[transcript-name].md`
 4. Move task file to appropriate status folder (`pending/` → `in-progress/` → `complete/`)
 5. Update task summary table in `ORCHESTRATOR.md`
 6. Add entry to Progress Notes with key details
@@ -59,7 +59,7 @@ For each task you work on:
 ## Critical Rules
 
 - **MUST use sub-agents for ALL tasks** - Never execute tasks directly yourself
-- **MUST instruct sub-agents to save transcripts** - Add to task prompt: "Save a copy of your full transcript to `.agent-tasks/[YYYYMMDD-task-folder]/agent-transcripts/[transcript-name].md`"
+- **MUST instruct sub-agents to save transcripts** - Add to task prompt: "Save a copy of your full transcript to `.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/[transcript-name].md`"
 - **Respect dependencies** - Check execution order before starting tasks
 - **Update as you go** - Keep the orchestrator document current
 - **Move files** - Task files must move through status folders as work progresses
@@ -69,7 +69,7 @@ For each task you work on:
 ## File Structure
 
 ```
-[YYYYMMDD-agent-task-folder]/
+.agent-tasks/tasks/[YYYYMMDD-task-folder]/
 ├── ORCHESTRATOR.md          # Your main reference document
 ├── pending/                 # Tasks not yet started
 ├── in-progress/             # Currently active tasks
