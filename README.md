@@ -171,6 +171,7 @@ For detailed guides on creating and managing agents:
 
 - **[Agent Setup Guide](docs/AGENT_SETUP_GUIDE.md)** - Provider-specific setup instructions, frontmatter requirements, file structures, and migration tips between providers
 - **[Writing Useful Agents](docs/WRITING_USEFUL_AGENTS.md)** - How to write agents that actually work: what to include, code examples, boundaries, and a quick checklist
+- **[Running Local Models](docs/LOCAL_MODELS.md)** - Set up llama.cpp server with Kilo CLI for local LLM inference
 
 ---
 
