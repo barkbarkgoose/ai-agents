@@ -24,7 +24,7 @@ sync_if_exists() {
 }
 
 # Define harnesses by concern
-agent_harnesses=("cursor" "claude" "gemini" "codex")
+agent_harnesses=("cursor" "claude" "gemini" "codex", "kilocode")
 commands_harnesses=("cursor" "claude" "gemini")
 skills_harnesses=("cursor" "claude" "gemini" "codex" "kilocode")
 

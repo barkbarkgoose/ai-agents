@@ -1,18 +1,31 @@
 # Python Environment — uv
 
-All Python backends use **uv** for environment and dependency management. The Python version is defined in the `greenfield-init` skill's `VERSIONS.md` — always use the pinned version from there.
+This spec covers working with Python backends using **uv** for environment and dependency management.
+
+## Existing Projects — Detect First
+
+Before applying any setup, inspect the project to determine what's already in use:
+
+| Signal | Tool to use |
+|--------|-------------|
+| `pyproject.toml` + `poetry.lock` | Poetry — do not force uv |
+| `pyproject.toml` + `uv.lock` | uv (pyproject-based) |
+| `requirements.txt` + `.python-version` | uv with requirements.txt |
+| `Pipfile` | Pipenv — adapt to what's there |
+
+**Rule:** Always detect before scaffolding. Treat existing artifacts as the source of truth.
 
 ## Setup
 
-When scaffolding the backend:
+When creating a new Python environment:
 
-1. **Create virtualenv pinned to the Python version in `VERSIONS.md`:**
+1. **Create virtualenv:**
    ```bash
    cd backend
    uv venv --python <version> venv
    ```
 
-2. **Create a `.python-version` file matching `VERSIONS.md`:**
+2. **Create a `.python-version` file:**
    ```bash
    echo "<version>" > .python-version
    ```
@@ -47,6 +60,7 @@ uv run --project backend pytest
 ```bash
 uv run python manage.py migrate
 uv run pytest
+uv run python manage.py runserver 0.0.0.0:8800
 ```
 
 ## Installing Packages

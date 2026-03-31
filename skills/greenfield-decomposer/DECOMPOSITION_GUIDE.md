@@ -19,6 +19,8 @@ Project setup, directory creation, configuration files, dependency installation.
 - Create Vue 3 project with TypeScript + Vite
 - Install and configure Tailwind CSS + SASS
 - Configure CORS between frontend and backend
+- Configure Vite proxy for /api, /admin, and /static
+- Configure Django static files (STATICFILES_DIRS, static directory)
 - Set up environment files (`.env`)
 
 ### Models / Data Layer

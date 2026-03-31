@@ -1,8 +1,10 @@
 # Default Technology Stack
 
+> **Greenfield projects only.** This file defines the default stack for new projects scaffolded from scratch. For existing projects, inspect the project's dependency files to determine what's actually in use — do not apply these defaults.
+
 Standard stack for all greenfield projects. Use these defaults unless project requirements specifically demand otherwise. When deviating, document the reason in the blueprint.
 
-For specific versions of all technologies, see `VERSIONS.md` in this folder.
+For specific versions of all technologies, see `VERSIONS.md` (at repo root).
 
 ## Project Structure Philosophy
 
@@ -137,6 +139,52 @@ For versions, see `VERSIONS.md`.
 | uv | Python package and virtualenv management — see `environments` skill (`python-uv.md`) |
 | `.env` files | Environment-specific config (never committed) |
 | Docker (optional) | Only when service dependencies require it (Redis, Celery, etc.) |
+
+## Dev Server Configuration
+
+| Service | Port | Notes |
+|---------|------|-------|
+| Backend (Django) | 8800 | Avoids port conflicts with common services |
+| Frontend (Vite) | 5177 | Default Vite port, change if occupied |
+
+### Vite Proxy Configuration
+
+When configuring vite.config.ts, proxy not just /api but also /admin and /static:
+
+```typescript
+export default defineConfig({
+  plugins: [vue()],
+  server: {
+    port: 5177,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8800',
+        changeOrigin: true,
+      },
+      '/admin': {
+        target: 'http://localhost:8800',
+        changeOrigin: true,
+      },
+      '/static': {
+        target: 'http://localhost:8800',
+        changeOrigin: true,
+      },
+    },
+  },
+})
+```
+
+### Django Settings for Static Files
+
+In `config/settings/base.py`:
+
+```python
+STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / "static"]  # Required for dev server
+```
+
+Create `backend/static/` directory (can be empty, Django populates it).
 
 ## When to Deviate
 

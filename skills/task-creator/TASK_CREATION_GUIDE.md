@@ -41,6 +41,17 @@ Every task file uses this structure:
 
 ---
 
+## Project Stack
+[For existing projects only — omit for greenfield. List the actual detected stack so the executing agent does not need to guess.]
+
+- Language/Runtime: [e.g., Node 20, Python 3.11]
+- Framework: [e.g., Vue 3, FastAPI]
+- Package manager: [e.g., npm, uv]
+- Key libraries: [relevant to this task only]
+- Test runner: [e.g., Vitest, pytest]
+
+---
+
 ## Objective
 [1-2 sentences: what needs to be done and why]
 
@@ -55,7 +66,7 @@ Every task file uses this structure:
 
 ## Final Step
 **REQUIRED:** Save a copy of your full execution transcript to:
-`.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/[task-id]-transcript.md`
+`.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/[phase-#]-[task-id]-transcript.md`
 
 ## Notes
 [Optional: warnings, edge cases, blockers encountered]
@@ -84,10 +95,28 @@ Standard code or configuration changes.
 1. Search for the target (use Grep, Glob, or Read as needed)
 2. Make the change
 3. Verify (ReadLints, compilation, etc.)
-4. **Save transcript to `.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/[task-id]-transcript.md`**
+4. **Save transcript to `.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/[phase-#]-[task-id]-transcript.md`**
 5. Mark complete
 
 **When to create a sub-task:** Only if you encounter a genuine blocker that prevents completion — not as a way to defer work. Document what you completed and what remains blocked.
+
+### Project Stack in Implementation Tasks
+
+When writing an implementation task for an **existing project**, always include a `## Project Stack` section immediately after the metadata block:
+
+```markdown
+## Project Stack
+
+This is an existing project. Use only the technologies listed below.
+
+- Language/Runtime: [e.g., Python 3.13, Node 22]
+- Framework: [e.g., FastAPI, Vue 3]
+- Package manager: [e.g., uv, npm]
+- Key libraries: [e.g., SQLAlchemy, Pinia, Axios — only those relevant to this task]
+- Test runner: [e.g., pytest, Vitest]
+```
+
+> **Why this matters:** Without explicit stack context, executing agents may default to assumptions based on training data (e.g., Django when the project uses FastAPI, or class components when the project uses Vue 3 Composition API). The stack section eliminates this ambiguity entirely.
 
 ---
 
@@ -99,7 +128,7 @@ Investigation or audit tasks that produce findings.
 1. Execute the search/analysis defined in the task
 2. Document findings in the specified location
 3. For each actionable finding, create an implementation task in `pending/`
-4. **Save transcript to `.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/[task-id]-transcript.md`**
+4. **Save transcript to `.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/[phase-#][task-id]-transcript.md`**
 5. Inform orchestrator of all tasks created
 
 **Required output:**
@@ -116,7 +145,7 @@ Research tasks add these sections to the base structure:
 
 ## Task Creation
 For each [type of finding], create:
-- File: `pending/XXX-[action]-[subject].md`
+- File: `pending/[phase-#]-XXX-[action]-[subject].md`
 - Must include: [required information]
 - Set `**Parent Task:** [this-task-id]`
 ```
@@ -222,7 +251,7 @@ Replace all occurrences of `instagram_actor_id` with `instagram_user_id` in:
 
 ## Final Step
 **REQUIRED:** Save a copy of your full execution transcript to:
-`.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/003-migrate-instagram-actor-id-transcript.md`
+`.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/[phase-#]-003-migrate-instagram-actor-id-transcript.md`
 ```
 
 ### If This Were a Research Task
@@ -246,7 +275,7 @@ Audit the codebase for usage of `instagram_actor_id` and create implementation t
 
 ## Task Creation
 For each file containing `instagram_actor_id`:
-- File: `.agent-tasks/tasks/[YYYYMMDD-task-folder]/pending/XXX-migrate-instagram-actor-id-[filename].md`
+- File: `.agent-tasks/tasks/[YYYYMMDD-task-folder]/pending/[phase-#]-XXX-migrate-instagram-actor-id-[filename].md`
 - Must include: file path, line numbers, surrounding context
 - Set `**Parent Task:** 003-audit-instagram-actor-id`
 
@@ -258,7 +287,7 @@ For each file containing `instagram_actor_id`:
 
 ## Final Step
 **REQUIRED:** Save a copy of your full execution transcript to:
-`.agent-tasks/tasks/[YYYYMMDD-task-folder/agent-transcripts/003-audit-instagram-actor-id-transcript.md`
+`.agent-tasks/tasks/[YYYYMMDD-task-folder/agent-transcripts/[phase-#]-003-audit-instagram-actor-id-transcript.md`
 ```
 
 ---
@@ -287,3 +316,4 @@ Before finalizing:
 - [ ] Verification is specific and checkable
 - [ ] **Final Step section instructs agent to save transcript**
 - [ ] No vague language ("somewhere", "might", "consider")
+- [ ] **Implementation tasks on existing projects include a `## Project Stack` section** with detected language, framework, package manager, and relevant libraries

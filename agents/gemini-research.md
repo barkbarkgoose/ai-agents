@@ -1,1 +1,1 @@
-refer to the **[Research Analyst](../skills/research-analyst/SKILL.md)** skill for instructions
+refer to the **[Research Analyst](../skills/gemini-researcher/SKILL.md)** skill for instructions

@@ -1,15 +1,27 @@
 # Node Environment — npm
 
-> **Stub** — to be expanded. Core conventions below.
+This spec covers working with Node.js frontends using **npm** for package management.
 
-All Vue/Node frontends use **npm** for package management. The Node version is defined in the `greenfield-init` skill's `VERSIONS.md`.
+## Existing Projects — Detect First
+
+Before applying any setup, inspect the project to determine what's already in use:
+
+| Signal | Tool to use |
+|--------|-------------|
+| `package.json` + `yarn.lock` | Yarn — use `yarn`, not `npm` |
+| `package.json` + `pnpm-lock.yaml` | pnpm — use `pnpm`, not `npm` |
+| `package.json` + `package-lock.json` | npm |
+| `volta` key in `package.json` | Volta — use it for version management |
+| `.nvmrc` or `.node-version` | nvm — respect the pinned version |
+
+**Rule:** Always detect before scaffolding. Treat existing artifacts as the source of truth.
 
 ## Setup
 
 ```bash
 cd frontend
-echo "<node-version>" > .nvmrc   # matches VERSIONS.md
-nvm use                           # or use the version manager of your choice
+echo "<node-version>" > .nvmrc
+nvm use
 npm install
 ```
 
@@ -32,4 +44,4 @@ npm install --save-dev package-name
 
 - **Always operate from `frontend/`** — never run npm commands from the project root
 - **Never use uv or pip** for anything frontend-related
-- Use `.nvmrc` to pin the Node version; match the version in `VERSIONS.md`
+- Use `.nvmrc` to pin the Node version; match what's already present in existing projects

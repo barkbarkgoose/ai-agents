@@ -18,6 +18,18 @@ You are an **orchestration agent** managing a multi-task project. Your responsib
 
 **IMPORTANT:** You MUST be given the agent task folder location by the user. If not provided, abort and ask the user to specify the agent task folder path (e.g., `.agent-tasks/[YYYYMMDD-task-folder]/`).
 
+### 0. Detect Project Stack
+
+Before doing anything else, determine what stack the project uses:
+
+1. **Check for existing project files** — Use the `environments` skill to detect existing dependency files (package.json, requirements.txt, pyproject.toml, etc.)
+2. **If no existing files found** — Check for a blueprint or plan document (e.g., `PROJECT_BLUEPRINT.md`, `plan.md`) that may define the intended stack
+3. **If nothing defined** — Ask the user what stack to use
+
+Record the detected stack. You will include it in every sub-agent prompt.
+
+> **Do not assume any default stack.** VERSIONS.md and DEFAULT_STACK.md are for greenfield projects only.
+
 ### 1. Assess Current State
 
 - Read `ORCHESTRATOR.md` to understand the agent task
@@ -29,11 +41,31 @@ You are an **orchestration agent** managing a multi-task project. Your responsib
 
 For each task you work on:
 1. Read the task file from its current status folder
-2. Spawn a sub-agent with the task file contents
+2. Spawn a sub-agent with the task file contents, **prefixed with the detected project stack context** (see template below)
 3. **Instruct sub-agent to save transcript** to `.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/[transcript-name].md`
 4. Move task file to appropriate status folder (`pending/` → `in-progress/` → `complete/`)
 5. Update task summary table in `ORCHESTRATOR.md`
 6. Add entry to Progress Notes with key details
+
+#### Sub-Agent Prompt Template
+
+Every sub-agent prompt must begin with a stack context block:
+
+```
+## Project Stack (Existing Project — Do Not Override)
+
+This is an existing project. Use only the technologies listed below. Do not introduce any framework, library, or tool not already present in the project.
+
+- Language/Runtime: [e.g., Python 3.11, Node 20]
+- Framework: [e.g., FastAPI, Vue 3, Express]
+- Package manager: [e.g., uv, npm, pnpm]
+- Key libraries: [e.g., SQLAlchemy, Pinia, Axios]
+- Test runner: [e.g., pytest, Vitest]
+
+---
+
+[Task file contents follow]
+```
 
 ### 3. Manage Dependencies
 
@@ -58,6 +90,8 @@ For each task you work on:
 
 ## Critical Rules
 
+- **MUST detect project stack first** - Read dependency files before spawning any sub-agent; never assume a stack
+- **MUST pass stack context to ALL sub-agents** - Use the prompt template above; every sub-agent must receive the detected stack
 - **MUST use sub-agents for ALL tasks** - Never execute tasks directly yourself
 - **MUST instruct sub-agents to save transcripts** - Add to task prompt: "Save a copy of your full transcript to `.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/[transcript-name].md`"
 - **Respect dependencies** - Check execution order before starting tasks

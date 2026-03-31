@@ -20,6 +20,9 @@ A validation gate answers: **"Is this working?"** — not "is this done?"
 | Dependencies installed | No import errors in either project |
 | CORS configured | Frontend can reach backend API without CORS errors |
 | Environment files work | `.env` loaded, settings reflect values |
+| Django admin loads | Navigate to /admin — styles render, login form shows |
+| Static files served | /admin static assets return 200, no 404s |
+| Vite proxy works | /admin route proxies to Django backend |
 
 ### Database / Models
 

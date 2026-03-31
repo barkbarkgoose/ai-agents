@@ -27,6 +27,16 @@ Read and internalize (located in this skill folder):
 - `TASK_STRUCTURE_GUIDE.md` — Folder conventions and project layout
 - `TASK_CREATION_GUIDE.md` — Task file format and writing rules
 
+### 1.5. Detect Project Stack
+
+Before creating tasks, determine what stack the project uses:
+
+1. **Check for existing project files** — Use the `environments` skill to detect existing dependency files (package.json, requirements.txt, pyproject.toml, etc.)
+2. **If no existing files found** — Check for a blueprint or plan document (e.g., `PROJECT_BLUEPRINT.md`, `plan.md`) that may define the intended stack
+3. **If nothing defined** — Ask the user what stack to use
+
+> **Do not assume any default stack.** VERSIONS.md and DEFAULT_STACK.md are for greenfield projects only.
+
 ### 2. Analyze Source Documents
 
 Read the provided research/audit documents and identify:
@@ -39,9 +49,10 @@ Read the provided research/audit documents and identify:
 For each piece of work identified:
 
 1. Determine the next available task number (check existing files in `pending/`)
-2. Create task file: `.agent-tasks/tasks/[YYYYMMDD-task-name]/pending/XXX-[action]-[subject].md`
+2. Create task file: `.agent-tasks/tasks/[YYYYMMDD-task-name]/pending/[phase-#]-XXX-[action]-[subject].md`
 3. Follow the task format defined in `TASK_CREATION_GUIDE.md`
 4. Set appropriate category (`implementation` or `research`)
+5. For **implementation tasks** on an existing project, include a `## Project Stack` section with the detected technologies so the executing agent does not need to guess
 
 ### 4. Report Results
 
@@ -83,8 +94,8 @@ Use the task-creator skill to generate tasks from:
 
 | Task ID | File | Description |
 |---------|------|-------------|
-| 001 | `pending/001-remove-deprecated-method.md` | Remove deprecated Instagram method |
-| 002 | `pending/002-migrate-actor-id.md` | Migrate instagram_actor_id to instagram_user_id |
+| 001 | `pending/[phase-#]-001-remove-deprecated-method.md` | Remove deprecated Instagram method |
+| 002 | `pending/[phase-#]-002-migrate-actor-id.md` | Migrate instagram_actor_id to instagram_user_id |
 | ... | ... | ... |
 
 ## Suggested Execution Order

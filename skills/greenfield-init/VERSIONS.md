@@ -1,8 +1,6 @@
 # Version Reference
 
-Canonical versions for all technologies used in the default stack. Always use these unless a project-specific deviation is documented in the blueprint.
-
-if a project is pre-existing refer to package or dependency files within the project first.  For greenfield then refer to these tables
+> **Greenfield projects only.** This file defines canonical versions for new projects being scaffolded from scratch. For existing projects, always inspect the project's own dependency files (`package.json`, `requirements.txt`, `pyproject.toml`, `uv.lock`, etc.) to determine the actual stack and versions in use. Never impose versions from this file onto an existing codebase.
 
 ## Python/Django Backend
 
