@@ -1,5 +1,5 @@
 ---
-name: research-analyst
+name: gemini-researcher
 description: Use this skill when you need to conduct research on a topic using external search capabilities. This includes gathering information from multiple sources, synthesizing findings, and producing well-organized research documents with citations.
 ---
 
