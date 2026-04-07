@@ -45,8 +45,8 @@ Organize tasks by project name for self-contained, referenceable work:
 - Keep lean: Orchestrator coordinates workflow; task files contain all technical context
 
 **Starting the Orchestrator:**
-- Use the generic `task-orchestrator` agent.
-- Prompt: "use the task-orchestrator agent for the [YYYYMMDD-task-folder] project"
+- Use the generic `task-orchestrator` skill.
+- Prompt: "use the task-orchestrator skill for the [YYYYMMDD-task-folder] project"
 - The orchestrator will read the project's ORCHESTRATOR.md and begin/resume work
 - Works for both initial kickoff and resuming later (orchestrator checks current status)
 
@@ -135,7 +135,7 @@ touch .agent-tasks/tasks/[YYYYMMDD-task-folder]/ORCHESTRATOR.md
 
 ### Start Orchestrator
 ```
-use the task-orchestrator agent for the `.agent-tasks/tasks/[YYYYMMDD-task-folder]` project
+use the task-orchestrator skill for the `.agent-tasks/tasks/[YYYYMMDD-task-folder]` project
 ```
 
 ### Archive Project

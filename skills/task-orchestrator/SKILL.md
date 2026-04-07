@@ -1,8 +1,8 @@
 ---
 name: task-orchestrator
-description: orchestration agent for tasks, takes a task folder as input and runs one sub-agent for each individual task file.  Should NOT execute or make any changes on its own, only sub-agents may do that.
+description: orchestration skill for tasks, takes a task folder as input and runs one sub-agent for each individual task file.  Should NOT execute or make any changes on its own, only sub-agents may do that.
 ---
-# Orchestrator Agent Prompt
+# Orchestrator Skill Prompt
 
 ## Your Role
 
