@@ -23,7 +23,7 @@ For versions, see `VERSIONS.md`.
 | Framework | Django | LTS release — see `VERSIONS.md` |
 | API | Django REST Framework (DRF) | Serializers, viewsets, permissions |
 | Auth | djangorestframework-simplejwt | JWT tokens for API auth |
-| Database | PostgreSQL | Default; swappable via Django ORM |
+| Database | SQLite | Default for local dev; swappable via Django ORM to PostgreSQL/MySQL/etc. |
 | CORS | django-cors-headers | Required for separate frontend |
 | Environment | django-environ | `.env` file support |
 | Testing | pytest + pytest-django | Over Django's built-in test runner |
@@ -193,6 +193,6 @@ Create `backend/static/` directory (can be empty, Django populates it).
 | Real-time features | Add `django-channels` + WebSocket support |
 | Background tasks | Add Celery + Redis |
 | File uploads | Add `django-storages` + S3/cloud storage |
-| Full-text search | Add Elasticsearch or PostgreSQL full-text search |
+| Full-text search | Add Elasticsearch or SQLite FTS5 |
 | GraphQL requirement | Replace DRF with Strawberry or Graphene |
 | Mobile app | Add Django Ninja or keep DRF, consider React Native for frontend |

@@ -44,10 +44,11 @@
 ## Infrastructure
 
 
-| Technology | Version | Policy        | Notes                           |
-| ---------- | ------- | ------------- | ------------------------------- |
-| PostgreSQL | 16.x    | LTS           | Current stable major            |
-| uv         | latest  | Always latest | Self-updates; no pinning needed |
+| Technology | Version | Policy        | Notes                                                        |
+| ---------- | ------- | ------------- | ------------------------------------------------------------ |
+| SQLite     | built-in | N/A           | Default for local dev; Django ORM handles all DBs            |
+| PostgreSQL | 16.x    | LTS           | Optional — only if project requires it                       |
+| uv         | latest  | Always latest | Self-updates; no pinning needed                             |
 
 
 ---
@@ -69,6 +70,5 @@
 When scaffolding a new project, verify LTS status for anything marked "LTS":
 
 - **Node.js:** [nodejs.org/en/about/releases](https://nodejs.org/en/about/releases)
-- **PostgreSQL:** [postgresql.org/support/versioning](https://www.postgresql.org/support/versioning/)
 - **Django:** [djangoproject.com/download](https://www.djangoproject.com/download/) — look for rows marked "LTS"
 
