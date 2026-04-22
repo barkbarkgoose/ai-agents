@@ -109,9 +109,34 @@ For versions, see `VERSIONS.md`.
 
 | Layer | Technology | Notes |
 |-------|------------|-------|
-| Utility | Tailwind CSS | Use framework classes over custom CSS — version in `VERSIONS.md` |
+| Utility | Tailwind CSS 4.x | Use framework classes over custom CSS — version in `VERSIONS.md` |
 | Preprocessor | SASS/SCSS | For component-scoped styles |
 | Naming | BEM | Block__Element--Modifier convention |
+
+### Tailwind CSS 4.x Setup
+
+Tailwind 4.x requires the `@tailwindcss/vite` plugin, NOT the PostCSS approach.
+
+**Installation:**
+```bash
+npm install @tailwindcss/vite tailwindcss
+```
+
+**vite.config.ts:**
+```typescript
+import tailwindcss from '@tailwindcss/vite'
+import vue from '@vitejs/plugin-vue'
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  plugins: [vue(), tailwindcss()],
+})
+```
+
+**CSS import — use `@import "tailwindcss"` in your main CSS file (NOT SCSS `@use`):**
+```css
+@import "tailwindcss";
+```
 
 ### Styling Rules
 
@@ -146,6 +171,14 @@ For versions, see `VERSIONS.md`.
 |---------|------|-------|
 | Backend (Django) | 8800 | Avoids port conflicts with common services |
 | Frontend (Vite) | 5177 | Default Vite port, change if occupied |
+
+### Frontend Environment
+
+In `frontend/.env`:
+
+```env
+VITE_API_URL=http://localhost:8800
+```
 
 ### Vite Proxy Configuration
 
@@ -182,9 +215,35 @@ In `config/settings/base.py`:
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]  # Required for dev server
+APPEND_SLASH = False  # Required — frontend calls /api/v1/auth/login without trailing slash
 ```
 
 Create `backend/static/` directory (can be empty, Django populates it).
+
+### Django Custom User Model
+
+When using a custom User model with a required FK to Organization (or similar), auto-create the organization in `UserManager.create_superuser()`:
+
+```python
+def create_superuser(self, email, password, organization=None, **extra_fields):
+    if organization is None:
+        from apps.organizations.models import Organization
+        organization = Organization.objects.create(
+            name=f"Superuser Org ({email})"
+        )
+    # ... rest of method
+```
+
+### Required Dependencies
+
+Always include these in `requirements.txt`:
+
+```
+django-filter>=25.0
+requests>=2.31
+```
+
+Add project-specific dependencies as needed (e.g., `twilio` for SMS auth).
 
 ## When to Deviate
 

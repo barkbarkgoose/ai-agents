@@ -17,10 +17,11 @@ Project setup, directory creation, configuration files, dependency installation.
 **Example items:**
 - Create Django project with split settings
 - Create Vue 3 project with TypeScript + Vite
-- Install and configure Tailwind CSS + SASS
+- Install and configure Tailwind CSS 4.x + SASS
 - Configure CORS between frontend and backend
 - Configure Vite proxy for /api, /admin, and /static
 - Configure Django static files (STATICFILES_DIRS, static directory)
+- Configure `APPEND_SLASH = False` in Django settings
 - Set up environment files (`.env`)
 
 ### Models / Data Layer

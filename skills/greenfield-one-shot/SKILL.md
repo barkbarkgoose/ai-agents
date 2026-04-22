@@ -81,6 +81,28 @@ Your role:
    ```
 4. Create `ORCHESTRATOR.md` with project overview, phases, and task tracking table
 
+### Pre-Scaffold Validation (if using existing scaffold)
+
+If a boilerplate scaffold already exists (e.g., cloned from a template), **do not assume it is valid**. Verify it works before skipping Phase 1:
+
+**Scaffold Validation Checklist:**
+- [ ] Backend: `uv run python manage.py check` exits 0
+- [ ] Backend: `uv run python manage.py runserver` starts without errors
+- [ ] Frontend: `npm run dev` starts without errors
+- [ ] Frontend can reach backend API (CORS/proxy working)
+- [ ] Django admin loads at /admin
+- [ ] Custom User model and Organization model exist (if project uses them)
+- [ ] Migrations have been applied (`uv run python manage.py migrate`)
+
+**If any check fails:**
+- Treat it as an incomplete scaffold — create tasks to fix the issues before proceeding
+- Do not skip to Phase 2 assuming "it'll work later"
+- Log failures in ORCHESTRATOR.md Progress Notes
+
+**If all checks pass:**
+- Mark Phase 1 (Scaffolding) as complete in ORCHESTRATOR.md
+- Proceed directly to Phase 2 decomposition
+
 ### Phase 1: Project Scaffolding
 
 **Decompose using greenfield-decomposer logic:**
@@ -89,12 +111,17 @@ Your role:
 2. The decomposition subagent reads `DECOMPOSITION_GUIDE.md` and `VALIDATION_GATES.md` internally
 3. Task creation is handled by spawning **task-creator subagents** for each work item (tasks are created in execution order per the blueprint)
 
-**Spawn subagents to execute Phase 1 tasks:**
+**Execute Phase 1 tasks:**
 
 For each task in Phase 1:
 - Spawn a subagent with the task file contents
 - Instruct the subagent to save a transcript to `agent-transcripts/[phase-#]-[task-id]-transcript.md`
 - Track task completion in ORCHESTRATOR.md
+
+**IMPORTANT — Avoid subagents for these operations:**
+- **Do NOT spawn subagents for `npm install`** — it is too slow and prone to timeout. Run it directly yourself before spawning subagents, or document that dependencies should be pre-installed.
+- **Do NOT spawn subagents to run dev servers** — subagents cannot reliably hold long-running processes.
+- **Do NOT spawn subagents to run tests that spin up servers** — timeouts are likely. Run tests directly or use shorter-lived test commands.
 
 **Verify Phase 1 gate:**
 - Verify dev servers start for both frontend and backend
@@ -105,7 +132,7 @@ For each task in Phase 1:
 **Backend: Models and Migrations**
 - Spawn **django-backend-dev subagents** for model creation tasks
 - Each subagent reads `./django-backend-dev/SKILL.md` internally
-- Spawn a subagent to run `python manage.py makemigrations` and `migrate`
+- Spawn a subagent to run `uv run python manage.py makemigrations` and `migrate`
 - Verify tables exist via Django admin
 
 **Frontend: Initial Components**
@@ -321,13 +348,13 @@ Verify each phase gate before proceeding to the next phase. If a gate fails:
 ### Standard Gates by Phase Type
 
 **Scaffolding Gate:**
-- [ ] Django: `python manage.py check` passes
+- [ ] Django: `uv run python manage.py check` passes
 - [ ] Vue: `npm run dev` starts without errors
 - [ ] Both projects can communicate (CORS configured, proxy working)
 
 **Data Layer Gate:**
-- [ ] `python manage.py makemigrations` succeeds with no issues
-- [ ] `python manage.py migrate` applies cleanly
+- [ ] `uv run python manage.py makemigrations` succeeds with no issues
+- [ ] `uv run python manage.py migrate` applies cleanly
 - [ ] Models appear in Django admin at /admin
 - [ ] Seed data (if any) loads successfully
 
@@ -348,7 +375,7 @@ Verify each phase gate before proceeding to the next phase. If a gate fails:
 
 **Polish Gate:**
 - [ ] `npm run lint` passes (frontend)
-- [ ] `python manage.py check` passes (backend)
+- [ ] `uv run python manage.py check` passes (backend)
 - [ ] No console errors in browser
 - [ ] All interactive elements have proper states (loading, error, empty)
 
