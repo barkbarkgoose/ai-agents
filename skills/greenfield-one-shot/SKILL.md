@@ -139,11 +139,15 @@ For each task in Phase 1:
 - Spawn **vue3-typescript subagents** for initial component creation
 - Each subagent reads `./vue3-typescript/SKILL.md` internally
 - Create auth forms (login, register) with mock data
+- **Use BEM component classes** from the design system (`.form-input`, `.btn--primary`, `.alert--error`) instead of long Tailwind utility strings
+- **Use theme tokens** (primary, secondary) instead of hardcoded colors (blue-600, gray-500)
 
 **Run Tailwind Auditor (Mid-Phase)**
 After frontend scaffolding is complete but before building out more components:
 - Spawn a **tailwind-auditor subagent** to scan the project
 - The subagent reads `./tailwind-auditor/SKILL.md` internally
+- Verify the `@layer components` BEM classes are set up per `DEFAULT_STACK.md`
+- Verify theme tokens are configured in `tailwind.config.js`
 - If consolidation tasks are needed, create task files in `pending/`
 - Execute consolidation tasks via **tailwind-bem-stylist subagents** (read `./tailwind-bem-stylist/SKILL.md`)
 
@@ -162,6 +166,8 @@ After frontend scaffolding is complete but before building out more components:
 - Spawn **vue3-typescript subagents** for each feature view
 - Connect to API contract with mock/placeholder data initially
 - Use Pinia for state management where needed
+- **Use BEM component classes** from the design system instead of inline Tailwind clusters
+- **Use theme tokens** (primary, secondary, error, success) for all colors
 
 **Subagent Spawning Pattern:**
 For each work item, spawn ONE subagent. Do NOT spawn subagents for sub-items within a task—the subagent handles all work in that task.
@@ -198,6 +204,7 @@ REQUIRED: Save your full transcript to:
 - Spawn **vue3-typescript subagents** to replace mock data with actual API calls
 - Each subagent reads `API_CONTRACT.md` to understand endpoint shapes
 - Implement error handling, loading states
+- **Maintain BEM component class usage** — do not add inline Tailwind utility clusters when wiring components
 
 **Verify Phase 4 gate:**
 - End-to-end data flow works: frontend creates → backend persists → frontend displays
@@ -207,6 +214,7 @@ REQUIRED: Save your full transcript to:
 
 **Tailwind Audit + Consolidation**
 - Run another **tailwind-auditor subagent** to check for any new class sprawl
+- Verify BEM component classes are used consistently (no hardcoded color utilities replacing theme tokens)
 - Execute remaining consolidation tasks via **tailwind-bem-stylist subagents**
 
 **Error Handling + Edge Cases**

@@ -138,9 +138,111 @@ export default defineConfig({
 @import "tailwindcss";
 ```
 
+### Tailwind CSS Component Layer
+
+Include a `@layer components` section in the main CSS file (`src/assets/styles/main.scss`) with pre-defined BEM component classes. This prevents the duplication issues found in audits (form inputs with 45+ character utility strings, buttons copy-pasted across views, etc.).
+
+**Main CSS file (`src/assets/styles/main.scss`):**
+```scss
+@import "tailwindcss";
+
+@layer components {
+  /* Form Inputs */
+  .form-input {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-400 transition-colors;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent;
+  }
+  .form-input--first {
+    @apply rounded-t-md;
+  }
+  .form-input--last {
+    @apply rounded-b-md border-t-0;
+  }
+  .form-input--error {
+    @apply border-red-500 focus:ring-red-500;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 font-medium rounded-md transition-colors;
+  }
+  .btn--primary {
+    @apply bg-primary text-white hover:bg-primary-dark;
+  }
+  .btn--secondary {
+    @apply bg-gray-200 text-gray-900 hover:bg-gray-300;
+  }
+  .btn--disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  /* Alerts */
+  .alert {
+    @apply px-4 py-3 rounded-md;
+  }
+  .alert--error {
+    @apply bg-red-50 border border-red-200;
+  }
+  .alert--success {
+    @apply bg-green-50 border border-green-200;
+  }
+  .alert__text {
+    @apply text-sm text-gray-700;
+  }
+  .alert__title {
+    @apply text-sm font-medium text-gray-900;
+  }
+
+  /* Navigation */
+  .nav-link {
+    @apply px-4 py-2 text-sm font-medium transition-colors rounded-md;
+  }
+  .nav-link--active {
+    @apply text-primary bg-primary/10;
+  }
+  .nav-link--inactive {
+    @apply text-gray-600 hover:text-gray-900 hover:bg-gray-100;
+  }
+}
+```
+
+**Theme token configuration in `tailwind.config.js`:**
+```javascript
+export default {
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          DEFAULT: 'var(--color-primary)',
+          dark: 'var(--color-primary-dark)',
+          light: 'var(--color-primary-light)',
+        },
+        secondary: {
+          DEFAULT: 'var(--color-secondary)',
+          dark: 'var(--color-secondary-dark)',
+        },
+      },
+    },
+  },
+}
+```
+
+**CSS custom properties (in `:root` or a `_variables.scss`):**
+```scss
+:root {
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-primary-light: #3b82f6;
+  --color-secondary: #64748b;
+  --color-secondary-dark: #475569;
+}
+```
+
 ### Styling Rules
 
 - Use Tailwind utility classes whenever possible over custom SCSS
+- Use BEM component classes from `@layer components` for repeated patterns (forms, buttons, alerts, nav)
+- Use theme tokens (primary, secondary) instead of hardcoded Tailwind color names (blue-600, gray-500, etc.)
 - Component `<style>` blocks use `lang="scss"` and `scoped`
 - Nest all SASS under the root component class for scoping
 - Use full class names for each BEM selector (no `&` nesting except pseudo-selectors and element selectors)

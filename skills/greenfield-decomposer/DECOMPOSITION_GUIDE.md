@@ -74,11 +74,31 @@ Vue components, views, routing, state management.
 
 **Sizing rule:** One item per view/page. Shared components extracted as separate items only if used across multiple views.
 
+**Design system integration:** Every frontend component should use BEM classes from the `@layer components` section (see `DEFAULT_STACK.md`) instead of inline Tailwind utility clusters. Use theme tokens (primary, secondary) instead of hardcoded colors (blue-600, gray-500).
+
 **Example items:**
-- Create login/register views with forms
+- Create login/register views with forms (use .form-input, .btn--primary, .alert--error)
 - Create dashboard view with project list
 - Create task board view with columns
-- Create shared navigation component
+- Create shared navigation component (use .nav-link, .nav-link--active, .nav-link--inactive)
+
+### Design System / UI Architecture
+
+Establishing the component layer, theme tokens, and BEM architecture.
+
+**Pattern:**
+1. Set up @layer components with BEM classes
+2. Configure tailwind.config.js with theme tokens
+3. Create CSS custom properties for colors
+4. Document component usage patterns
+
+**Sizing rule:** One item per concern (forms, buttons, alerts, navigation). Include in scaffolding phase.
+
+**Example items:**
+- Set up form input BEM classes (.form-input, .form-input--first, .form-input--last, .form-input--error)
+- Set up button BEM classes (.btn, .btn--primary, .btn--secondary, .btn--disabled)
+- Set up alert BEM classes (.alert, .alert--error, .alert--success, .alert__text, .alert__title)
+- Set up navigation BEM classes (.nav-link, .nav-link--active, .nav-link--inactive)
 
 ### Integration
 
@@ -116,10 +136,10 @@ Environment setup, Docker, CI/CD, deployment config.
 ### Dependency Flow
 
 ```
-Scaffolding → Models → Endpoints → Components → Integration
+Scaffolding → Design System → Models → Endpoints → Components → Integration
 ```
 
-Items within each category can often run in parallel.
+Items within each category can often run in parallel. Design System items (if not done in Scaffolding) should precede Frontend Components.
 
 ### Dependency Declaration
 

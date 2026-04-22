@@ -93,7 +93,19 @@ For any phase where frontend and backend can proceed independently:
 3. Both streams build against the contract
 4. Integration phase verifies contract compliance
 
-### 7. Output
+### 7. Establish Design System
+
+Before scaffolding, define the design system to prevent the duplication issues found in audits (form inputs copy-pasted with 45+ character utility strings, buttons repeated across views, hardcoded colors instead of theme tokens).
+
+**Include in the blueprint:**
+- **Theme tokens:** primary, secondary, error, success colors defined as CSS custom properties
+- **BEM component classes:** Pre-defined in `@layer components` for forms, buttons, alerts, navigation
+- **Spacing scale:** Limited steps (2, 4, 6, 8, 12, 16, 24, 32)
+- **Typography ramp:** Heading levels, body, caption sizes
+
+**Reference:** See `DEFAULT_STACK.md` for the standard `@layer components` setup with BEM classes.
+
+### 8. Output
 
 Create the project folder structure and produce artifacts:
 
@@ -111,7 +123,7 @@ Create the project folder structure and produce artifacts:
 
 Follow the blueprint structure defined in `BLUEPRINT_GUIDE.md`.
 
-### 8. Hand Off
+### 9. Hand Off
 
 After producing the blueprint, instruct the user:
 
@@ -127,6 +139,7 @@ Before finalizing the blueprint:
 
 - [ ] All blocking gaps are resolved (asked user or documented assumption)
 - [ ] Stack is confirmed or defaults applied with assumptions stated
+- [ ] Design system established with theme tokens and BEM component classes
 - [ ] Every phase has a validation gate
 - [ ] Phases are ordered by dependency
 - [ ] Parallel streams have an API contract
