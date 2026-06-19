@@ -8,31 +8,39 @@ llmmux creates tmux sessions where each agent runs in its own window. An orchest
 
 ## Quick Start
 
-### 1. Sync to Home Directory
+### 1. Install Dependencies
 
 From the project root:
 
 ```bash
-./sync.sh
+uv venv
+uv pip install -r requirements.txt
 ```
 
-This copies llmmux files to `~/.llmmux/` and sets up a Python virtual environment with required dependencies.
+This creates a `.venv/` and installs `python-dotenv`.
 
 ### 2. Create an Orchestrator Session
 
 ```bash
 cd /path/to/your/project
-~/.llmmux/orchestrator --provider agent
+uv run orchestrator.py --provider claude
 ```
 
-**Note:** Use the wrapper scripts (not `python3`) to automatically activate the virtual environment with required dependencies.
+The orchestrator writes an `AGENTS.md` into your project root and launches `pi` in a tmux window. `pi` auto-loads `AGENTS.md` from cwd, so all bootstrap instructions flow through that file rather than the CLI.
 
-Available providers:
-- `agent` - Cursor AI
-- `codex` - OpenAI Codex CLI
-- `claude` - Anthropic Claude CLI
-- `gemini` - Google Gemini CLI (note: may run in headless mode)
-- `opencode` - OpenCode CLI
+Available providers (each maps to a `pi --model` value):
+
+| Provider | pi model |
+|----------|----------|
+| `claude` | `anthropic/claude-sonnet-4-5` |
+| `gemini` | `google/gemini-2.5-pro` |
+| `codex` / `agent` / `opencode` / `kilo` | `openai-codex/gpt-5.4` |
+| `sonnet` | `anthropic/claude-sonnet-4-5` |
+| `opus` | `anthropic/claude-opus-4-1` |
+| `gpt` | `openai-codex/gpt-5.5` |
+| `minimax` | `minimax/MiniMax-M2.7` |
+
+Override per-provider with `LLMMUX_PI_MODEL_<NAME>` (e.g. `LLMMUX_PI_MODEL_CLAUDE=anthropic/claude-opus-4-1`), or pass a raw `pi` model string directly as `--provider` (e.g. `--provider google/gemma-4:high`).
 
 ### 3. Attach to Session
 
@@ -73,20 +81,25 @@ Each orchestrator launch generates a new `<session-id>` and records the tmux ses
 From within your tmux session:
 
 ```bash
-# Using a skill
-~/.llmmux/create_agent --name vue-agent --skill vue3-typescript
+# Interactive TUI pane (stays open after initial prompt)
+uv run create_agent.py --name vue-agent --skill vue3-typescript
 
-# With custom prompt
-~/.llmmux/create_agent --name django-agent --prompt "Create REST API"
+# One-shot execution (pi -p, window closes when done)
+uv run create_agent.py --name coder --provider claude --prompt "Fix the auth bug" --oneshot
+
+# With a custom prompt
+uv run create_agent.py --name django-agent --prompt "Create REST API"
 
 # Specific provider
-~/.llmmux/create_agent --name researcher --provider gemini
+uv run create_agent.py --name researcher --provider gemini
 ```
+
+Each agent gets its own working directory at `~/.llmmux/state/<session-id>/agents/<agent-name>/`. `create_agent.py` writes an `AGENTS.md` there before spawning the tmux pane, so `pi` boots with the right context.
 
 From outside tmux (specify session):
 
 ```bash
-~/.llmmux/create_agent --session llmmux --name coder --prompt "Implement auth"
+uv run create_agent.py --session llmmux --name coder --prompt "Implement auth"
 ```
 
 ## Configuration
@@ -172,9 +185,11 @@ Tip: say “please setup handoff for the next session” to prompt the orchestra
 
 | File | Purpose |
 |------|---------|
-| `orchestrator.py` | Main entry point - creates sessions |
-| `create_agent.py` | Spawns agent windows |
+| `orchestrator.py` | Main entry point - creates tmux sessions, launches `pi` orchestrator |
+| `create_agent.py` | Spawns agent tmux windows; writes per-agent `AGENTS.md`; supports `--oneshot` (`pi -p`) |
+| `utils.py` | Shared module: env loading, session lookup, state path resolution, `pi` command templating, environment verification |
 | `INIT_ORCHESTRATOR.md` | Bootstrap instructions for orchestrator LLM |
+| `INIT_AGENT.md` | Bootstrap instructions for subagent LLMs |
 | `TMUX_CHEATSHEET.md` | Comprehensive tmux reference |
 | `.default_env` | Default configuration |
 | `README.md` | This file |
@@ -252,19 +267,47 @@ PROVIDER_gemini=gemini -p '{prompt}' --temperature 0.7
 
 ## Dependencies
 
-### Python Virtual Environment
+llmmux has two runtime dependencies:
 
-llmmux automatically creates a virtual environment in `~/.llmmux/venv/` during sync and installs required dependencies:
+- `python-dotenv` (Python) — declared in `requirements.txt`
+- `pi` (Node.js) — the [earendil-works/pi-coding-agent](https://github.com/earendil-works/pi) CLI, installed globally
 
-- `python-dotenv` - For loading environment configuration
+### Install with uv (recommended)
 
-The wrapper scripts (`~/.llmmux/orchestrator` and `~/.llmmux/create_agent`) automatically activate this virtual environment before running the Python scripts.
+```bash
+# 1. Python deps
+uv venv
+uv pip install -r requirements.txt
+
+# 2. pi CLI (node >= 20 required)
+npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+
+# 3. Authenticate pi via env vars (or use `pi --api-key` at runtime)
+export GEMINI_API_KEY=...
+export DEEPSEEK_API_KEY=...
+
+# 4. Run
+uv run orchestrator.py --provider claude
+uv run create_agent.py --name vue-agent --skill vue3-typescript
+```
+
+The Python scripts automatically verify that `node >= 20` and the `pi` binary are on PATH and print setup instructions if they're missing.
+
+### Install with pip
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+```
 
 ### System Requirements
 
 - Python 3.7+
+- Node.js 20+
 - tmux
-- curl/wget (for provider CLIs if not already installed)
+- curl/wget (for installing provider CLIs if not already installed)
 
 ## Related Projects
 

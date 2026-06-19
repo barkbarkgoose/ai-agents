@@ -16,25 +16,20 @@ import subprocess
 import sys
 from pathlib import Path
 
-from dotenv import load_dotenv
+from utils import (
+    LLMMUX_HOME,
+    VALID_PROVIDERS,
+    load_environment,
+    session_exists,
+    resolve_state_dir,
+    resolve_pi_model,
+    verify_pi_environment,
+    write_agents_md,
+    get_provider_command,
+)
 
 
-# Constants
-LLMMUX_HOME = Path.home() / ".llmmux"
-VALID_PROVIDERS = ["gemini", "agent", "codex", "claude", "opencode"]
 INIT_AGENT_FILENAME = "INIT_AGENT.md"
-
-
-def load_environment():
-    """Load environment variables from .default_env and .env"""
-    default_env = LLMMUX_HOME / ".default_env"
-    user_env = LLMMUX_HOME / ".env"
-    
-    if default_env.exists():
-        load_dotenv(default_env, override=False)
-    
-    if user_env.exists():
-        load_dotenv(user_env, override=True)
 
 
 def load_agent_init_text() -> str:
@@ -72,22 +67,6 @@ def get_current_session() -> str:
         return result.stdout.strip()
     
     return None
-
-
-def session_exists(session_name: str) -> bool:
-    """Check if a tmux session exists"""
-    # Use list-sessions instead of has-session for more reliable detection
-    result = subprocess.run(
-        ['tmux', 'list-sessions', '-F', '#{session_name}'],
-        capture_output=True,
-        text=True
-    )
-
-    if result.returncode != 0:
-        return False
-
-    sessions = result.stdout.strip().split("\n")
-    return session_name in sessions
 
 
 def get_session_name(args_session: str = None) -> str:
@@ -232,32 +211,23 @@ def get_prompt_text(args_prompt: str = None, args_skill: str = None) -> str:
     return "You are a specialized agent. Ask the user what task you should work on."
 
 
-def get_provider_command(provider: str, prompt: str) -> str:
+def create_agent_window(
+    session_name: str,
+    agent_name: str,
+    provider: str,
+    prompt: str,
+    worker_dir: Path,
+    mode: str = "interactive",
+):
     """
-    Get the command to run for a given provider.
-    Uses environment variables with format: PROVIDER_<name>
-    """
-    env_key = f"PROVIDER_{provider}"
-    template = os.getenv(env_key)
-    
-    if not template:
-        # Fallback defaults
-        defaults = {
-            "gemini": "gemini -p '{prompt}'",
-            "agent": "agent '{prompt}'",
-            "codex": "codex '{prompt}'",
-            "claude": "claude '{prompt}'",
-            "opencode": "opencode '{prompt}'",
-        }
-        template = defaults.get(provider, f"{provider} '{prompt}'")
-    
-    # Replace {prompt} placeholder
-    return template.replace("{prompt}", prompt)
+    Create a new tmux window for the agent and send the `pi` command.
 
+    The window is created with `-c worker_dir` so `pi` boots in the right
+    working directory and auto-loads the AGENTS.md we wrote there.
 
-def create_agent_window(session_name: str, agent_name: str, provider: str, prompt: str):
-    """
-    Create a new tmux window for the agent and send the provider command
+    Args:
+        mode: "interactive" -> pane stays in pi TUI.
+              "oneshot"     -> pi runs the task and exits (window will close).
     """
     # Check if window already exists
     result = subprocess.run(
@@ -265,7 +235,7 @@ def create_agent_window(session_name: str, agent_name: str, provider: str, promp
         capture_output=True,
         text=True
     )
-    
+
     if result.returncode == 0:
         existing_windows = result.stdout.strip().split("\n")
         if agent_name in existing_windows:
@@ -274,46 +244,55 @@ def create_agent_window(session_name: str, agent_name: str, provider: str, promp
             if overwrite not in ["y", "yes"]:
                 print("Cancelled")
                 return
-    
-    # Create new window
-    print(f"\nCreating window '{agent_name}' in session '{session_name}'...")
+
+    # Create new window rooted at worker_dir so pi picks up AGENTS.md.
+    worker_dir.mkdir(parents=True, exist_ok=True)
+    print(f"\nCreating window '{agent_name}' in session '{session_name}' (cwd: {worker_dir})...")
     subprocess.run([
         "tmux", "new-window",
         "-t", session_name,
-        "-n", agent_name
+        "-n", agent_name,
+        "-c", str(worker_dir),
     ], check=True)
-    
-    # Get the provider command
-    command = get_provider_command(provider, prompt)
-    
-    # Send command to the window
-    print(f"Launching agent with provider '{provider}'...")
-    subprocess.run([
-        "tmux", "send-keys",
-        "-t", f"{session_name}:{agent_name}",
-        command,
-        "C-m"  # Enter key
-    ], check=True)
-    
+
+    # Build the `pi` command.
+    pi_model = resolve_pi_model(provider)
+    command = get_provider_command(provider, prompt, mode=mode)
+    print(f"Launching agent via `pi` (model: {pi_model}, mode: {mode})...")
+
+    try:
+        subprocess.run([
+            "tmux", "send-keys",
+            "-t", f"{session_name}:{agent_name}",
+            command,
+            "C-m",  # Enter key
+        ], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error: failed to send command to tmux window: {e}", file=sys.stderr)
+        sys.exit(1)
+
     # Create agent state file
     state_dir = resolve_state_dir(session_name) / "agents"
     if state_dir.exists():
         from datetime import datetime
-        
+
         agent_state = {
             "name": agent_name,
             "provider": provider,
+            "pi_model": pi_model,
+            "mode": mode,
+            "worker_dir": str(worker_dir),
             "prompt": prompt,
             "created_at": datetime.now().isoformat(),
             "status": "running",
             "last_action": "created",
             "last_run_ts": datetime.now().isoformat()
         }
-        
+
         state_file = state_dir / f"{agent_name}.last.json"
         with open(state_file, "w") as f:
             json.dump(agent_state, f, indent=2)
-    
+
     print(f"\n✓ Agent '{agent_name}' created successfully!")
     print(f"\nSwitch to agent window:")
     print(f"  Ctrl+b w   (then select {agent_name})")
@@ -373,28 +352,28 @@ Provider Skills:
         type=str,
         help="Target tmux session (auto-detected if running in tmux)"
     )
-    
+
+    parser.add_argument(
+        "--oneshot",
+        action="store_true",
+        help="Run `pi -p` (non-interactive) instead of the interactive TUI. "
+             "The tmux window will close once the task completes."
+    )
+
     return parser.parse_args()
-
-
-def resolve_state_dir(session_name: str) -> Path:
-    index_path = LLMMUX_HOME / "state" / "session_index.json"
-    if index_path.exists():
-        with open(index_path, "r") as f:
-            index = json.load(f)
-        session_id = index.get(session_name)
-        if session_id:
-            return LLMMUX_HOME / "state" / session_id
-    return LLMMUX_HOME / "state" / session_name
 
 
 def main():
     """Main entry point"""
     args = parse_args()
-    
+
+    # Verify `pi` (node >= 20 and the `pi` binary) is available.
+    if not verify_pi_environment():
+        sys.exit(1)
+
     # Load environment
     load_environment()
-    
+
     # Get configuration
     session_name = get_session_name(args.session)
     agent_name = get_agent_name(args.name)
@@ -407,9 +386,21 @@ def main():
         prompt = f"{init_text}\n\nAgent state file: {agent_state_path}\n\n---\n\n{prompt}"
     else:
         prompt = f"Agent state file: {agent_state_path}\n\n{prompt}"
-    
+
+    # Worker dir = per-agent subdirectory under the session's state dir.
+    # We write AGENTS.md here so `pi` boots with the right context.
+    worker_dir = state_dir / "agents" / agent_name
+    agents_md_content = (
+        f"# llmmux Agent: {agent_name} (session: {session_name})\n\n"
+        f"{prompt}\n"
+    )
+    write_agents_md(worker_dir, agents_md_content)
+    print(f"Wrote {worker_dir / 'AGENTS.md'}")
+
+    mode = "oneshot" if args.oneshot else "interactive"
+
     # Create the agent window
-    create_agent_window(session_name, agent_name, provider, prompt)
+    create_agent_window(session_name, agent_name, provider, prompt, worker_dir, mode=mode)
 
 
 if __name__ == "__main__":

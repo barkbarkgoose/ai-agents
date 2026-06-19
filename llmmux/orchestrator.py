@@ -19,20 +19,28 @@ from shutil import copy2
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from dotenv import load_dotenv
+from utils import (
+    LLMMUX_HOME,
+    VALID_PROVIDERS,
+    load_environment,
+    session_exists,
+    resolve_state_dir,
+    resolve_pi_model,
+    verify_pi_environment,
+    write_agents_md,
+    get_provider_command,
+)
 
 
-# Constants
-LLMMUX_HOME = Path.home() / ".llmmux"
 REQUIRED_FILES = [
     "orchestrator.py",
     "create_agent.py",
+    "utils.py",
     "INIT_AGENT.md",
     "INIT_ORCHESTRATOR.md",
     "TMUX_CHEATSHEET.md",
     ".default_env",
 ]
-VALID_PROVIDERS = ["gemini", "agent", "codex", "claude", "opencode"]
 
 
 def ensure_llmmux_setup():
@@ -66,23 +74,6 @@ def ensure_llmmux_setup():
     return True
 
 
-def load_environment():
-    """
-    Load environment variables from .default_env and .env
-    .env overrides .default_env values
-    """
-    default_env = LLMMUX_HOME / ".default_env"
-    user_env = LLMMUX_HOME / ".env"
-    
-    # Load defaults first
-    if default_env.exists():
-        load_dotenv(default_env, override=False)
-    
-    # Override with user settings
-    if user_env.exists():
-        load_dotenv(user_env, override=True)
-
-
 def check_tmux_available():
     """Check if tmux is installed and available"""
     try:
@@ -96,15 +87,6 @@ def check_tmux_available():
         print("Error: tmux is not installed or not in PATH")
         print("Install tmux with: brew install tmux (macOS) or apt install tmux (Linux)")
         return False
-
-
-def session_exists(session_name: str) -> bool:
-    """Check if a tmux session exists"""
-    result = subprocess.run(
-        ["tmux", "has-session", "-t", session_name],
-        capture_output=True
-    )
-    return result.returncode == 0
 
 
 def handle_existing_session(session_name: str) -> str:
@@ -233,29 +215,6 @@ def get_provider(args_provider: str = None) -> str:
     return provider
 
 
-def get_provider_command(provider: str, prompt: str) -> str:
-    """
-    Get the command to run for a given provider.
-    Uses environment variables with format: PROVIDER_<name>
-    """
-    env_key = f"PROVIDER_{provider}"
-    template = os.getenv(env_key)
-    
-    if not template:
-        # Fallback defaults
-        defaults = {
-            "gemini": "gemini -p '{prompt}'",
-            "agent": "agent '{prompt}'",
-            "codex": "codex '{prompt}'",
-            "claude": "claude '{prompt}'",
-            "opencode": "opencode '{prompt}'",
-        }
-        template = defaults.get(provider, f"{provider} '{prompt}'")
-    
-    # Replace {prompt} placeholder
-    return template.replace("{prompt}", prompt)
-
-
 def create_session_state_dirs(session_name: str):
     """Create state and artifacts directories for the session"""
     state_dir = LLMMUX_HOME / "state" / session_name
@@ -308,39 +267,54 @@ def initialize_run_state(state_dir: Path, session_id: str, tmux_session_name: st
 
 def launch_orchestrator_session(session_name: str, session_id: str, project_root: str, provider: str):
     """
-    Create tmux session and launch orchestrator agent
+    Create tmux session and launch the orchestrator agent via `pi`.
+    Writes an AGENTS.md into the project root so `pi` ingests orchestrator
+    instructions on startup (pi auto-discovers AGENTS.md from cwd).
     """
     # Create state directories
     state_dir, _ = create_session_state_dirs(session_id)
     update_session_index(session_name, session_id)
     initialize_run_state(state_dir, session_id, session_name, project_root, provider)
-    
-    # Create tmux session
+
+    # Resolve the pi model up front so we fail fast on bad provider names.
+    pi_model = resolve_pi_model(provider)
+
+    # Write AGENTS.md into the project root so pi picks it up at startup.
+    project_root_path = Path(project_root).resolve()
+    init_file = LLMMUX_HOME / "INIT_ORCHESTRATOR.md"
+    agents_md_content = (
+        f"# llmmux Orchestrator (session: {session_name})\n\n"
+        f"You are the orchestrator agent. Follow the bootstrap instructions at:\n"
+        f"  {init_file}\n\n"
+        f"Session state: {LLMMUX_HOME / 'state' / session_id}\n"
+        f"Artifacts:    {LLMMUX_HOME / 'artifacts' / session_id}\n"
+    )
+    write_agents_md(project_root_path, agents_md_content)
+    print(f"Wrote {project_root_path / 'AGENTS.md'}")
+
+    # Create tmux session in the project root so pi's cwd matches AGENTS.md.
     print(f"\nCreating tmux session '{session_name}'...")
     subprocess.run([
         "tmux", "new-session",
         "-d",                    # detached
         "-s", session_name,      # session name
         "-n", "orchestrator",    # window name
-        "-c", project_root       # starting directory
+        "-c", str(project_root_path),  # starting directory
     ], check=True)
-    
-    # Prepare the orchestrator prompt
-    init_file = LLMMUX_HOME / "INIT_ORCHESTRATOR.md"
+
+    # Build the `pi` command. Orchestrator pane stays interactive so the
+    # user can keep driving it after the initial prompt.
     prompt = f"orchestrator agent: refer to {init_file}"
-    
-    # Get the provider command
-    command = get_provider_command(provider, prompt)
-    
-    # Send the command to the orchestrator window
-    print(f"Launching orchestrator with provider '{provider}'...")
+    command = get_provider_command(provider, prompt, mode="interactive")
+    print(f"Launching orchestrator via `pi` with model '{pi_model}'...")
+
     subprocess.run([
         "tmux", "send-keys",
         "-t", f"{session_name}:orchestrator",
         command,
-        "C-m"  # Enter key
+        "C-m",  # Enter key
     ], check=True)
-    
+
     print(f"\n✓ Orchestrator session '{session_name}' created successfully!")
     print(f"\nAttach with:")
     print(f"  tmux attach -t {session_name}")
@@ -393,11 +367,15 @@ After the session is created, attach with:
 def main():
     """Main entry point"""
     args = parse_args()
-    
+
     # Check tmux availability
     if not check_tmux_available():
         sys.exit(1)
-    
+
+    # Verify `pi` (node >= 20 and the `pi` binary) is available.
+    if not verify_pi_environment():
+        sys.exit(1)
+
     # Ensure ~/.llmmux is set up
     ensure_llmmux_setup()
     
