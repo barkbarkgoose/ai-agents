@@ -24,9 +24,9 @@ sync_if_exists() {
 }
 
 # Define harnesses by concern
-agent_harnesses=("cursor" "claude" "gemini" "codex", "kilocode")
-commands_harnesses=("cursor" "claude" "gemini")
-skills_harnesses=("cursor" "claude" "gemini" "codex" "kilocode")
+agent_harnesses=("cursor" "claude" "gemini" "codex" "kilocode" "kilo")
+commands_harnesses=("cursor" "claude" "gemini" "kilo")
+skills_harnesses=("cursor" "claude" "gemini" "codex" "kilocode" "kilo")
 
 # Sync agents
 echo "  -> Syncing agents..."
