@@ -1,0 +1,279 @@
+#!/usr/bin/env bash
+#
+# llmmux - tmux-based multi-chat pane manager for local-agent CLIs.
+#
+# Subcommands:
+#   llmmux new <name> [--cwd DIR]                    create detached tmux session
+#   llmmux chat <name> [--cwd DIR] [--provider P]    open a chat pane running `pi`
+#                          [--prompt "..."] [--oneshot]
+#                          [--write-agents-md]
+#                          [--cmd "..."]              (override the agent CLI entirely)
+#   llmmux ls                                        list llmmux sessions
+#   llmmux attach <name>                             attach to session
+#   llmmux kill <name>                               kill whole session
+#   llmmux kill-window <session> <window>            kill one window
+#   llmmux help                                      this text
+#
+# Configuration lives in:
+#   <repo>/.default_env     - checked-in defaults (provider mappings, agent CLI)
+#   ~/.llmmux/.env          - user overrides (loaded on top)
+#
+# LLMMUX_AGENT_CMD / LLMMUX_AGENT_CMD_ONESHOT are printf-style templates with
+# exactly two %s placeholders (model, then prompt). Escape literal % as %%.
+#
+set -euo pipefail
+
+LLMMUX_HOME="${LLMMUX_HOME:-$HOME/.llmmux}"
+LLMMUX_REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# ---------- env loading ----------
+_load_env_file() {
+  local f="$1"
+  [[ -f "$f" ]] || return 0
+  # shellcheck disable=SC1090
+  set -a; source "$f"; set +a
+}
+
+_load_env_file "$LLMMUX_REPO/.default_env"
+_load_env_file "$LLMMUX_HOME/.default_env"   # optional, mirrors repo layout
+_load_env_file "$LLMMUX_HOME/.env"          # user overrides win
+
+# Populated by build_agent_cmd so cmd_chat can print it without re-resolving.
+# Default so set -u doesn't trip when --cmd bypasses the template path.
+LLMMUX_RESOLVED_MODEL=""
+LLMMUX_AGENT_OUTPUT=""
+
+# ---------- helpers ----------
+die()  { printf "error: %s\n" "$*" >&2; exit 1; }
+info() { printf "%s\n" "$*"; }
+ensure_home() { mkdir -p "$LLMMUX_HOME"; }
+
+session_exists() {
+  local name="$1"
+  tmux has-session -t "$name" 2>/dev/null
+}
+
+window_exists() {
+  local session="$1" window="$2"
+  tmux list-windows -t "$session" -F '#W' 2>/dev/null | grep -Fxq "$window"
+}
+
+# Translate a provider shortcut (e.g. "gemini-flash") to a pi --model value.
+# Falls back to the provider string itself (passthrough) when no mapping exists.
+resolve_model() {
+  local provider="$1"
+  local key
+  key="LLMMUX_PI_MODEL_$(printf '%s' "$provider" | tr '[:lower:]-' '[:upper:]_')"
+  if [[ -n "${!key:-}" ]]; then
+    printf '%s' "${!key}"
+  else
+    printf '%s' "$provider"
+  fi
+}
+
+# Resolve the target tmux session name. Priority:
+#   1. $LLMMUX_SESSION
+#   2. Current session (if running inside tmux)
+#   3. The only session (if exactly one exists)
+# Otherwise die with a clear message. Single tmux list-sessions call.
+resolve_target_session() {
+  if [[ -n "${LLMMUX_SESSION:-}" ]]; then
+    session_exists "$LLMMUX_SESSION" || die "tmux session '$LLMMUX_SESSION' does not exist"
+    printf '%s' "$LLMMUX_SESSION"
+    return
+  fi
+
+  if [[ -n "${TMUX:-}" ]]; then
+    local s
+    s="$(tmux display-message -p '#S' 2>/dev/null || true)"
+    if [[ -n "$s" ]]; then
+      printf '%s' "$s"
+      return
+    fi
+  fi
+
+  local sessions
+  sessions="$(tmux list-sessions -F '#S' 2>/dev/null || true)"
+  local count=0
+  if [[ -n "$sessions" ]]; then
+    count="$(printf '%s\n' "$sessions" | grep -c . || true)"
+  fi
+
+  if [[ "$count" -eq 1 ]]; then
+    printf '%s\n' "$sessions" | head -n1
+  elif [[ "$count" -gt 1 ]]; then
+    die "multiple tmux sessions exist; specify one with LLMMUX_SESSION=<name>"
+  else
+    die "no tmux session exists; create one with 'llmmux new <name>'"
+  fi
+}
+
+# Build the agent-CLI invocation. Writes the resolved model into the global
+# LLMMUX_RESOLVED_MODEL so callers can show it without re-resolving.
+#
+# Templates (LLMMUX_AGENT_CMD, LLMMUX_AGENT_CMD_ONESHOT) must contain exactly
+# two %s placeholders (model, prompt). Empty prompt substitutes as "" — the
+# resulting command has a harmless trailing space that the shell collapses.
+build_agent_cmd() {
+  local provider="$1" prompt="$2" mode="$3"
+  LLMMUX_RESOLVED_MODEL="$(resolve_model "$provider")"
+
+  local tmpl
+  if [[ "$mode" == "oneshot" ]]; then
+    tmpl="${LLMMUX_AGENT_CMD_ONESHOT:-pi --model %s -p %s}"
+  else
+    tmpl="${LLMMUX_AGENT_CMD:-pi --model %s %s}"
+  fi
+
+  # Escape single quotes for shell embedding inside the prompt token.
+  local prompt_escaped=""
+  if [[ -n "$prompt" ]]; then
+    prompt_escaped="$(printf '%s' "$prompt" | sed "s/'/'\\\\''/g")"
+  fi
+
+  # shellcheck disable=SC2059
+  LLMMUX_AGENT_OUTPUT="$(printf "$tmpl" "$LLMMUX_RESOLVED_MODEL" "$prompt_escaped")"
+}
+
+# ---------- subcommands ----------
+cmd_new() {
+  local name="" cwd=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --cwd) cwd="$2"; shift 2;;
+      -h|--help) cmd_help; return 0;;
+      *) name="$1"; shift;;
+    esac
+  done
+  [[ -n "$name" ]] || die "usage: llmmux new <name> [--cwd DIR]"
+
+  if session_exists "$name"; then
+    die "session '$name' already exists (use 'llmmux ls' to see, or 'llmmux kill $name')"
+  fi
+
+  ensure_home
+  local start_dir="${cwd:-$PWD}"
+  tmux new-session -d -s "$name" -n "shell" -c "$start_dir"
+  info "created session '$name' (start dir: $start_dir)"
+  info "attach with: llmmux attach $name"
+}
+
+cmd_chat() {
+  local name="" cwd="" provider="${LLMMUX_DEFAULT_PROVIDER:-gemini-flash}"
+  local prompt="" oneshot=0 cmd_override="" write_agents_md=0
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --cwd)              cwd="$2"; shift 2;;
+      --provider)         provider="$2"; shift 2;;
+      --prompt)           prompt="$2"; shift 2;;
+      --oneshot)          oneshot=1; shift;;
+      --cmd)              cmd_override="$2"; shift 2;;
+      --write-agents-md)  write_agents_md=1; shift;;
+      -h|--help)          cmd_help; return 0;;
+      *)                  name="$1"; shift;;
+    esac
+  done
+  [[ -n "$name" ]] || die "missing window name. usage: llmmux chat NAME [--cwd DIR] [--provider P] [--prompt '...'] [--oneshot] [--write-agents-md] [--cmd '...']"
+
+  ensure_home
+  local session
+  session="$(resolve_target_session)"
+
+  session_exists "$session" || die "tmux session '$session' does not exist"
+
+  if window_exists "$session" "$name"; then
+    die "window '$name' already exists in session '$session'"
+  fi
+
+  local pane_dir="${cwd:-$PWD}"
+  mkdir -p "$pane_dir"
+
+  # Optional per-pane AGENTS.md:
+  #   - if a prompt is given AND AGENTS.md already exists, append (safe)
+  #   - if a prompt is given AND --write-agents-md is set, create new
+  #   - otherwise leave the project tree alone
+  if [[ -n "$prompt" ]]; then
+    local agents_md="$pane_dir/AGENTS.md"
+    if [[ -f "$agents_md" ]]; then
+      {
+        printf '\n\n<!-- llmmux pane: %s -->\n%s\n' "$name" "$prompt"
+      } >> "$agents_md"
+      info "appended to $agents_md"
+    elif [[ "$write_agents_md" -eq 1 ]]; then
+      printf '# llmmux pane: %s\n\n%s\n' "$name" "$prompt" > "$agents_md"
+      info "wrote $agents_md"
+    else
+      info "note: $agents_md does not exist; pass --write-agents-md to create one"
+    fi
+  fi
+
+  # Create the window.
+  tmux new-window -a -t "$session" -n "$name" -c "$pane_dir"
+
+  # Build and send the agent command.
+  local mode="interactive"
+  [[ "$oneshot" -eq 1 ]] && mode="oneshot"
+
+  local final_cmd
+  if [[ -n "$cmd_override" ]]; then
+    final_cmd="$cmd_override"
+    LLMMUX_RESOLVED_MODEL="$provider"
+  else
+    build_agent_cmd "$provider" "$prompt" "$mode"
+    final_cmd="$LLMMUX_AGENT_OUTPUT"
+  fi
+
+  tmux send-keys -t "$session:$name" "$final_cmd" Enter
+  info "opened pane '$session:$name' (cwd: $pane_dir, model: $LLMMUX_RESOLVED_MODEL, mode: $mode)"
+}
+
+cmd_ls() {
+  tmux ls 2>/dev/null || info "(no tmux sessions)"
+}
+
+cmd_attach() {
+  local name="${1:-}"
+  [[ -n "$name" ]] || die "usage: llmmux attach <name>"
+  session_exists "$name" || die "session '$name' does not exist"
+  tmux attach -t "$name"
+}
+
+cmd_kill() {
+  local name="${1:-}"
+  [[ -n "$name" ]] || die "usage: llmmux kill <name>"
+  session_exists "$name" || die "session '$name' does not exist"
+  tmux kill-session -t "$name"
+  info "killed session '$name'"
+}
+
+cmd_kill_window() {
+  local session="${1:-}" window="${2:-}"
+  [[ -n "$session" && -n "$window" ]] || die "usage: llmmux kill-window <session> <window>"
+  session_exists "$session" || die "session '$session' does not exist"
+  window_exists "$session" "$window" || die "window '$window' does not exist in session '$session'"
+  tmux kill-window -t "$session:$window"
+  info "killed window '$session:$window'"
+}
+
+cmd_help() {
+  sed -n '2,16p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+}
+
+# ---------- dispatch ----------
+# Allow top-level help/version flags.
+case "${1:-}" in
+  -h|--help) cmd_help; exit 0;;
+esac
+
+[[ $# -ge 1 ]] || { cmd_help; exit 1; }
+sub="$1"; shift
+case "$sub" in
+  new)         cmd_new "$@";;
+  chat)        cmd_chat "$@";;
+  ls|list)     cmd_ls "$@";;
+  attach|at)   cmd_attach "$@";;
+  kill)        cmd_kill "$@";;
+  kill-window) cmd_kill_window "$@";;
+  help|-h|--help) cmd_help;;
+  *) die "unknown subcommand: $sub (try 'llmmux help')";;
+esac
