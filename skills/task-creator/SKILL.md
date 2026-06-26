@@ -27,6 +27,9 @@ Read and internalize (located in this skill folder):
 - `TASK_STRUCTURE_GUIDE.md` — Folder conventions and project layout
 - `TASK_CREATION_GUIDE.md` — Task file format and writing rules
 
+Also read the relevant skill:
+- `../coding-architect/SKILL.md` — Use strictly for high-level structural guidance (e.g., cohesive modules, minimal contracts). Do NOT use it to over-specify variable names, internal function logic, or micro-optimizations in the task descriptions.
+
 ### 1.5. Detect Project Stack
 
 Before creating tasks, determine what stack the project uses:

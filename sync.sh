@@ -1,16 +1,30 @@
 #!/bin/bash
-# sync.sh - Sync top-level project directories to all harness home directories
-# Agents sync to: cursor, claude, gemini, codex
-# Commands sync to: cursor, claude, gemini
-# Skills sync to: cursor, claude, gemini, codex, kilocode
+# sync.sh - Sync top-level project directories to OpenCode-compatible home
+# directories. Targets both stock OpenCode and Kilo (which reads its own XDG
+# root at ~/.config/kilo/, not ~/.config/opencode/).
+#
+# Agents sync to:   ~/.config/opencode/agents/, ~/.config/kilo/agents/
+# Commands sync to: ~/.config/opencode/commands/, ~/.config/kilo/commands/
+# Skills sync to:   ~/.config/opencode/skills/, ~/.config/kilo/skills/
+#
+# Note: oh-my-pi (omp) is not targeted here. omp does not expose a
+# user-level agents/commands/skills directory; it uses ~/.omp/agent/ for
+# YAML settings and inherits rules from other harnesses on first run.
 
 set -e  # Exit on error
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-echo "Syncing project files to all harnesses..."
+# Two destination roots. Kilo reads ~/.config/kilo/ as its XDG global root;
+# stock OpenCode reads ~/.config/opencode/. Both must be kept in sync.
+OPENCODE_DEST="$HOME/.config/opencode"
+KILO_DEST="$HOME/.config/kilo"
 
-# Function to sync a directory if it exists
+# Function to sync a directory if it exists. Files in the destination that are
+# not present in the source are preserved -- this avoids pruning files the
+# user has added to their harness home directories. Adding or removing
+# agents/skills/commands is the user's responsibility; rerun sync.sh after
+# such changes.
 sync_if_exists() {
   local source="$1"
   local destination="$2"
@@ -19,39 +33,36 @@ sync_if_exists() {
   if [[ -d "$source" ]]; then
     echo "    -> Syncing $label..."
     mkdir -p "$destination"
-    rsync -av --delete "$source/" "$destination/"
+    rsync -av "$source/" "$destination/"
   fi
 }
 
-# Define harnesses by concern
-agent_harnesses=("cursor" "claude" "gemini" "codex", "kilocode")
-commands_harnesses=("cursor" "claude" "gemini")
-skills_harnesses=("cursor" "claude" "gemini" "codex" "kilocode")
-
-# Sync agents
+# Sync agents to both roots
 echo "  -> Syncing agents..."
-for harness in "${agent_harnesses[@]}"; do
-  echo "    -> .$harness/agents"
-  sync_if_exists "./agents" ~/.$harness/agents "agents"
+for dest_root in "$OPENCODE_DEST" "$KILO_DEST"; do
+  dest_dir="$dest_root/agents"
+  echo "    -> ${dest_dir/#$HOME/~}"
+  sync_if_exists "$SCRIPT_DIR/agents" "$dest_dir" "agents"
 
-  # Inject harness-specific frontmatter into synced agent files
-  if [[ -d "./agents" && -d "./agent-frontmatter" ]]; then
-    bash "$SCRIPT_DIR/subscripts/inject-harness-frontmatter.sh" "$harness" ~/.$harness/agents
+  if [[ -d "$SCRIPT_DIR/agents" && -d "$SCRIPT_DIR/agent-frontmatter" ]]; then
+    bash "$SCRIPT_DIR/subscripts/inject-harness-frontmatter.sh" opencode "$dest_dir"
   fi
 done
 
-# Sync commands
+# Sync commands to both roots
 echo "  -> Syncing commands..."
-for harness in "${commands_harnesses[@]}"; do
-  echo "    -> .$harness/commands"
-  sync_if_exists "./commands" ~/.$harness/commands "commands"
+for dest_root in "$OPENCODE_DEST" "$KILO_DEST"; do
+  dest_dir="$dest_root/commands"
+  echo "    -> ${dest_dir/#$HOME/~}"
+  sync_if_exists "$SCRIPT_DIR/commands" "$dest_dir" "commands"
 done
 
-# Sync skills
+# Sync skills to both roots
 echo "  -> Syncing skills..."
-for harness in "${skills_harnesses[@]}"; do
-  echo "    -> .$harness/skills"
-  sync_if_exists "./skills" ~/.$harness/skills "skills"
+for dest_root in "$OPENCODE_DEST" "$KILO_DEST"; do
+  dest_dir="$dest_root/skills"
+  echo "    -> ${dest_dir/#$HOME/~}"
+  sync_if_exists "$SCRIPT_DIR/skills" "$dest_dir" "skills"
 done
 
 echo "Sync complete!"

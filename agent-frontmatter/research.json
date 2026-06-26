@@ -1,0 +1,11 @@
+{
+  "defaults": {
+    "name": "research",
+    "description": "Use this agent when the user needs to conduct research on a topic using external search capabilities. This includes gathering information from multiple sources, synthesizing findings, and producing well-organized research documents with citations."
+  },
+  "harnesses": {
+    "opencode": {
+      "mode": "subagent"
+    }
+  }
+}

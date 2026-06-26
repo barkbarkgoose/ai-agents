@@ -37,15 +37,21 @@ Record the detected stack. You will include it in every sub-agent prompt.
 - Review Progress Notes to see what's been done
 - Identify which tasks are ready to execute (dependencies met)
 
-### 2. Execute Tasks
+### 2. Execute and Review Tasks
 
-For each task you work on:
-1. Read the task file from its current status folder
-2. Spawn a sub-agent with the task file contents, **prefixed with the detected project stack context** (see template below)
-3. **Instruct sub-agent to save transcript** to `.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/[transcript-name].md`
-4. Move task file to appropriate status folder (`pending/` → `in-progress/` → `complete/`)
-5. Update task summary table in `ORCHESTRATOR.md`
-6. Add entry to Progress Notes with key details
+For each task you work on, follow this exact lifecycle:
+
+1. **Read & Plan:** Read the task file from its current status folder. Define the primary target files. Instruct the sub-agent that it should only edit those targets, **unless** a direct caller, import, type definition, or test must be updated to keep the change correct and the build passing.
+2. **Execute:** Spawn a sub-agent with the task file contents, **prefixed with the detected project stack context** (see template below).
+3. **Instruct sub-agent to save transcript:** Add instructions to save the transcript to `.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/[transcript-name].md`.
+4. **Standard Review:** When the sub-agent returns, DO NOT immediately mark the task complete. Check `git status --short` and relevant diffs to ensure the sub-agent didn't touch forbidden files. 
+5. **Boundary Review (Conditional):** If the task introduced, modified, or renamed a **public contract** (e.g., shared config, API boundary, core interface) that downstream tasks consume:
+   - Read the `coding-architect` skill located at `../coding-architect/SKILL.md` (relative to this orchestrator skill file).
+   - Perform a targeted review focused *only* on how that contract shape will affect downstream tasks.
+   - If the contract shape is wrong or creates downstream issues, spawn a NEW sub-agent correction task with concrete feedback.
+6. **Finalize:** Once the work passes review, move the task file to the appropriate status folder (`pending/` → `in-progress/` → `complete/`).
+7. Update task summary table in `ORCHESTRATOR.md`.
+8. Add entry to Progress Notes with key details.
 
 #### Sub-Agent Prompt Template
 
@@ -87,6 +93,7 @@ This is an existing project. Use only the technologies listed below. Do not intr
 
 **Sign-Off Section:**
 - Mark phase milestones as complete when all phase tasks finish
+- **End-of-Batch Review:** When all tasks in a phase (or the entire project) are finished, you MUST spawn a final review sub-agent. Instruct it to read `../coding-architect/SKILL.md` and perform a full, cross-cutting architectural review of the completed work.
 
 ## Critical Rules
 
@@ -94,10 +101,12 @@ This is an existing project. Use only the technologies listed below. Do not intr
 - **MUST pass stack context to ALL sub-agents** - Use the prompt template above; every sub-agent must receive the detected stack
 - **MUST use sub-agents for ALL tasks** - Never execute tasks directly yourself
 - **MUST instruct sub-agents to save transcripts** - Add to task prompt: "Save a copy of your full transcript to `.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/[transcript-name].md`"
+- **MUST review work before completing** - Perform a Standard Review on every task, and a Boundary Review (using `coding-architect`) on tasks that change public contracts.
+- **MUST perform an End-of-Batch Review** - Run a full `coding-architect` review sub-agent at the end of a phase or project.
 - **Respect dependencies** - Check execution order before starting tasks
 - **Update as you go** - Keep the orchestrator document current
 - **Move files** - Task files must move through status folders as work progresses
-  - instruct subagents to do this, double check any time a subagent finishes and move the file immediately
+  - move the file to complete *only after* it passes your review.
 - **Document blockers** - Note any issues in Progress Notes immediately
 
 ## File Structure

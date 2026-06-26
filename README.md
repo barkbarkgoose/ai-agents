@@ -1,23 +1,17 @@
 # AI Agents & Skills
 
-A collection of reusable AI agents and skills for **Cursor**, **Claude Code**, and **Gemini CLI**. This repository serves as both a working configuration and a template for setting up your own AI-assisted development workflows.
+A skill-first collection of AI agents and skills for **OpenCode** (and Kilo via OpenCode compatibility). This repository serves as both a working configuration and a template for setting up your own AI-assisted development workflows.
 
 ---
 
 ## What Are Agents and Skills?
 
-Modern AI coding assistants can be extended with custom instructions that guide their behavior for specific tasks. Different tools call these extensions different things:
+Modern AI coding assistants can be extended with custom instructions that guide their behavior for specific tasks. Different tools call these extensions different things, but in this repository we treat:
 
-| Tool | Extension Type | Purpose |
-|------|---------------|---------|
-| **Cursor** | Skills | Specialized instruction sets that guide the AI for specific tasks |
-| **Claude Code** | Agents | Standalone task handlers with defined tools and capabilities |
-| **Gemini CLI** | Both | Supports both agents (standalone) and skills (composable) |
+- **Agents** — top-level personas the user picks as their main mode (advisor, orchestrator, research, etc.).
+- **Skills** — reusable instruction sets that any agent can load for a specific domain (Django, Vue, Tailwind, etc.).
 
-**Think of them as:**
-- A senior developer's expertise, packaged into reusable instructions
-- Guardrails that keep the AI focused on your team's patterns and standards
-- Specialized "modes" the AI can switch into for different types of work
+Agents are intentionally small. Specialized behavior lives in skills so multiple agents can share the same expertise.
 
 ---
 
@@ -32,25 +26,23 @@ cd ai-agents
 
 ### 2. Run the Sync Script
 
-The sync script copies agents and skills to the appropriate locations in your home directory:
+The sync script copies agents, commands, and skills to your OpenCode-compatible home directories:
 
 ```bash
 chmod +x sync.sh
 ./sync.sh
 ```
 
-This syncs **Deprecated**:
-- `./cursor/` → `~/.cursor/` (agents, commands, skills)
-- `./claude/` → `~/.claude/` (agents, commands, skills)
-- `./gemini/` → `~/.gemini/` (agents, commands, skills)
+This syncs the shared `./agents`, `./commands`, and `./skills` to:
+- `~/.config/opencode/` — read by stock OpenCode.
+- `~/.config/kilo/` — read by Kilo (Kilo's XDG global root, distinct from `~/.config/opencode/`).
 
-**Note:** The sync only touches the `agents/`, `commands/`, and `skills/` subdirectories. Other files in your home directories (like `~/.cursor/plans/`) remain untouched.
+**Note:** The sync only touches the `agents/`, `commands/`, and `skills/` subdirectories.
 
 ### 3. Verify Installation
 
-- **Cursor**: Open Cursor and check that skills appear in the skills panel
-- **Claude Code**: Run `claude` and verify agents are available
-- **Gemini CLI**: Run `gemini` and check for available agents/skills
+- **OpenCode**: Run `opencode` and check that agents are available via `/agents` or `Ctrl+P`.
+- **Kilo**: Run `kilo`. Kilo reads `~/.config/kilo/` as its XDG global root (not `~/.config/opencode/`).
 
 ---
 
@@ -58,36 +50,43 @@ This syncs **Deprecated**:
 
 ```
 ai-agents/
-├── cursor/                    # Cursor IDE configurations
-│   ├── agents/               # (Reserved for future use)
-│   ├── commands/             # Custom slash commands
-│   └── skills/               # Skill definitions
-│       └── <skill-name>/
-│           └── SKILL.md
-│
-├── claude/                    # Claude Code configurations
-│   ├── agents/               # Agent definitions
-│   │   └── <agent-name>.md
-│   ├── commands/             # (Reserved for future use)
-│   └── skills/               # Skill definitions
-│       └── <skill-name>/
-│           └── SKILL.md
-│
-├── gemini/                    # Gemini CLI configurations
-│   ├── agents/               # Agent definitions
-│   │   └── <agent-name>.md
-│   ├── commands/             # (Reserved for future use)
-│   └── skills/               # Skill definitions
-│       └── <skill-name>/
-│           └── SKILL.md
-│
+├── agents/                    # Agent definitions
+│   ├── advisor.md             # Ask-only advisor (no writes)
+│   ├── research.md            # Research agent (delegates to gemini-researcher skill)
+│   ├── small-model-orchestrator.md  # Smart orchestrator
+│   └── small-subagent.md      # Implementation subagent
+├── commands/                  # Custom slash commands (reserved)
+├── skills/                    # Skill definitions
+│   └── <skill-name>/
+│       └── SKILL.md
+├── agent-frontmatter/         # Harness-specific frontmatter templates
 ├── docs/                      # Documentation
-│   ├── AGENT_SETUP_GUIDE.md  # Provider-specific setup details
-│   └── WRITING_USEFUL_AGENTS.md  # How to write effective agents
-│
 ├── sync.sh                    # Deployment script
 └── README.md                  # You are here
 ```
+
+---
+
+## Agents
+
+| Agent | Mode | Model | Purpose |
+|-------|------|-------|---------|
+| `advisor` | primary | `openai/gpt-5.4` | Ask-only questions, design discussion, debugging advice. No writes/edits. |
+| `research` | subagent | (defaults) | Conducts external research using the `gemini-researcher` skill. |
+| `small-model-orchestrator` | primary | `openai/gpt-5.5` | Plans work and delegates all writes/edits to `small-subagent`. Reviews each phase and spawns follow-up tasks for corrections. |
+| `small-subagent` | subagent | `lmstudio/gemma-4-26b` | Performs scoped edits, traces imports/usages, reports back. |
+
+### Smart Orchestrator Workflow
+
+The `small-model-orchestrator` follows this loop for every implementation request:
+
+1. **Plan** the change set, files, and validation steps.
+2. **Spawn** a `small-subagent` task with precise, scoped instructions.
+3. **Review** the diff and changed files itself.
+4. If correct, summarize what changed and validation results.
+5. If adjustments are needed, **spawn another `small-subagent`** with concrete correction instructions.
+
+The orchestrator never writes or edits files directly.
 
 ---
 
@@ -99,11 +98,9 @@ ai-agents/
 ┌─────────────────────┐         ┌─────────────────────┐
 │   This Repository   │         │   Home Directory    │
 │                     │         │                     │
-│  cursor/skills/     │ ──────► │  ~/.cursor/skills/  │
-│  cursor/commands/   │ ──────► │  ~/.cursor/commands/│
-│  claude/agents/     │ ──────► │  ~/.claude/agents/  │
-│  gemini/agents/     │ ──────► │  ~/.gemini/agents/  │
-│  gemini/skills/     │ ──────► │  ~/.gemini/skills/  │
+│  ./skills/          │ ──────► │  ~/.<harness>/skills/  │
+│  ./commands/        │ ──────► │  ~/.<harness>/commands/│
+│  ./agents/          │ ──────► │  ~/.<harness>/agents/  │
 │                     │         │                     │
 └─────────────────────┘         └─────────────────────┘
         Edit here                   Used by AI tools
@@ -114,64 +111,14 @@ ai-agents/
 3. **Run** `./sync.sh` to deploy to your home directory
 4. **Use** the updated agents in your AI tools
 
-This approach lets you:
-- Version control your AI configurations
-- Share configurations across machines
-- Collaborate with teammates on agent improvements
-- Keep a clean separation between "source" and "deployed" configs
-
----
-
-## Agentic loops
-
-Agents in this collection, as an example, use a centralized `.agent-tasks/` directory structure for task tracking and audit outputs. This convention works across all platforms (Cursor, Claude, Gemini).
-
-### Directory Structure
-
-When running agent loops it's a good idea to have a task queuing system in place.  This _could_ help the AI by breaking down tasks and keeping context windows clean; but it also makes it easier to keep track of what the AI is doing as the human developer.
-
-```
-<your-project>/.agent-tasks/
-├── tasks/
-│   ├── pending/          # Tasks waiting to be picked up
-│   ├── in_progress/      # Currently being worked on
-│   └── done/             # Completed tasks
-└── audits/
-    └── TAILWIND_AUDIT_*.md # Timestamped audit reports
-```
-
-### How It Works
-
-1. **Multi-Agent Orchestrator** breaks down complex requests into discrete task files
-2. Each task file is placed in `.agent-tasks/tasks/pending/`
-3. Sub-agents (django, vue3, tailwind) pick up tasks and move them through the workflow
-4. Audit agents (like tailwind-auditor) output timestamped reports to `.agent-tasks/audits/`
-
-### Task File Format
-
-Each task is a descriptively-named markdown file (e.g., `add-user-dashboard-api.md`) containing:
-- Target agent/skill
-- Goal and acceptance criteria
-- Context and dependencies
-- Expected outputs
-- Ready-to-run prompt
-
-### Benefits
-
-- **Cross-platform**: Works with Cursor, Claude Code, Gemini CLI, etc.
-- **Session continuity**: Pick up where you left off across chat sessions
-- **Parallel work**: Multiple agents can work on different tasks
-- **Audit trail**: Clear history of what was done and why
-
 ---
 
 ## Documentation
 
-For detailed guides on creating and managing agents:
-
-- **[Agent Setup Guide](docs/AGENT_SETUP_GUIDE.md)** - Provider-specific setup instructions, frontmatter requirements, file structures, and migration tips between providers
-- **[Writing Useful Agents](docs/WRITING_USEFUL_AGENTS.md)** - How to write agents that actually work: what to include, code examples, boundaries, and a quick checklist
-- **[Running Local Models](docs/LOCAL_MODELS.md)** - Set up llama.cpp server with Kilo CLI for local LLM inference
+- **[Agent Setup Guide](docs/AGENT_SETUP_GUIDE.md)** - OpenCode/Kilo + oh-my-pi setup details, frontmatter requirements, and file structures.
+- **[Writing Useful Agents](docs/WRITING_USEFUL_AGENTS.md)** - How to write agents and skills that actually work.
+- **[LLM Agent Context Limitations](docs/llm-agent-context-limitations.md)** - Why self-contained prompts beat modular file chains.
+- **[Running Local Models](docs/LOCAL_MODELS.md)** - Set up llama.cpp / LM Studio with OpenCode-compatible CLIs.
 
 ---
 
@@ -180,15 +127,9 @@ For detailed guides on creating and managing agents:
 ### Agents not appearing
 
 1. Verify the sync completed: `./sync.sh`
-2. Check file permissions: `ls -la ~/.cursor/skills/`
+2. Check file permissions: `ls -la ~/.config/opencode/agents/ ~/.config/kilo/agents/`
 3. Restart your AI tool
 4. Verify frontmatter syntax (YAML is whitespace-sensitive)
-
-### Agent not being selected
-
-- Make the `description` more specific
-- Add `<example>` tags (Claude/Gemini) to help with selection
-- Check that the description matches your actual use case
 
 ### Sync script errors
 
@@ -200,6 +141,6 @@ For detailed guides on creating and managing agents:
 
 ## Resources
 
-- [Cursor Documentation](https://docs.cursor.com/)
-- [Claude Code Documentation](https://code.claude.com/docs)
-- [Gemini CLI Repository](https://github.com/google-gemini/gemini-cli)
+- [OpenCode Documentation](https://opencode.ai/docs)
+- [Kilo Documentation](https://kilo.ai/docs)
+- [oh-my-pi](https://github.com/oh-my-pi)

@@ -30,8 +30,9 @@ Read and internalize:
 - `BLUEPRINT_GUIDE.md` — Blueprint document structure and template (in this skill folder)
 - `CONTRACT_GUIDE.md` — API interface contract format (in this skill folder)
 
-Also read the relevant skill:
+Also read the relevant skills:
 - `environments` skill — environment setup specs for each stack layer (Python/uv, Node/npm, Docker)
+- `coding-architect` skill — Use strictly for high-level structural guidance (e.g., cohesive modules, minimal contracts, avoiding premature abstractions). Do NOT use it to over-specify variable names, internal function logic, or micro-optimizations in the blueprint.
 
 ### 2. Parse Input & Gap Analysis
 

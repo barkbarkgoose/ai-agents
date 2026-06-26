@@ -1,0 +1,19 @@
+{
+  "defaults": {
+    "name": "advisor",
+    "description": "Primary ask-only agent for questions, architecture discussion, tradeoff analysis, debugging advice, and code review guidance. It must not write or edit files.",
+    "mode": "primary",
+    "model": "openai/gpt-5.4",
+    "permission": {
+      "write": "deny",
+      "edit": "deny",
+      "bash": "ask"
+    },
+    "skills": [
+      "coding-architect"
+    ]
+  },
+  "harnesses": {
+    "opencode": {}
+  }
+}
