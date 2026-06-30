@@ -18,7 +18,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # Two destination roots. Kilo reads ~/.config/kilo/ as its XDG global root;
 # stock OpenCode reads ~/.config/opencode/. Both must be kept in sync.
 OPENCODE_DEST="$HOME/.config/opencode"
-KILO_DEST="$HOME/.config/kilo"
+KILO_DEST="$HOME/.kilo"
 
 # Function to sync a directory if it exists. Files in the destination that are
 # not present in the source are preserved -- this avoids pruning files the
@@ -38,7 +38,7 @@ sync_if_exists() {
 }
 
 # Sync agents to both roots
-echo "  -> Syncing agents..."
+echo " ------ Syncing agents ------"
 for dest_root in "$OPENCODE_DEST" "$KILO_DEST"; do
   dest_dir="$dest_root/agents"
   echo "    -> ${dest_dir/#$HOME/~}"
@@ -50,7 +50,7 @@ for dest_root in "$OPENCODE_DEST" "$KILO_DEST"; do
 done
 
 # Sync commands to both roots
-echo "  -> Syncing commands..."
+echo " ------ Syncing commands ------"
 for dest_root in "$OPENCODE_DEST" "$KILO_DEST"; do
   dest_dir="$dest_root/commands"
   echo "    -> ${dest_dir/#$HOME/~}"
@@ -58,7 +58,7 @@ for dest_root in "$OPENCODE_DEST" "$KILO_DEST"; do
 done
 
 # Sync skills to both roots
-echo "  -> Syncing skills..."
+echo " ------ Syncing skills ------"
 for dest_root in "$OPENCODE_DEST" "$KILO_DEST"; do
   dest_dir="$dest_root/skills"
   echo "    -> ${dest_dir/#$HOME/~}"
