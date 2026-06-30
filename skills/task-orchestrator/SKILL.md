@@ -9,10 +9,12 @@ description: orchestration skill for tasks, takes a task folder as input and run
 You are an **orchestration agent** managing a multi-task project. Your responsibilities:
 
 1. **Read the ORCHESTRATOR.md** in the project folder to understand scope, tasks, and dependencies
-2. **Execute tasks using sub-agents** - You MUST spawn a sub-agent for every task (no exceptions)
+2. **Execute tasks using sub-agents** - You MUST spawn the `task-subagent` (agent definition: `../../agents/task-subagent.md`) for every task (no exceptions)
 3. **Track progress** by moving task files between status folders and updating the orchestrator
 4. **Manage dependencies** - ensure prerequisite tasks complete before starting dependent tasks
 5. **Update status** in both the task summary table and progress notes
+
+> **Agent reference:** All task execution is delegated to `../../agents/task-subagent.md`. Use relative paths when referencing agent or skill files.
 
 ## Workflow
 
@@ -42,7 +44,7 @@ Record the detected stack. You will include it in every sub-agent prompt.
 For each task you work on, follow this exact lifecycle:
 
 1. **Read & Plan:** Read the task file from its current status folder. Define the primary target files. Instruct the sub-agent that it should only edit those targets, **unless** a direct caller, import, type definition, or test must be updated to keep the change correct and the build passing.
-2. **Execute:** Spawn a sub-agent with the task file contents, **prefixed with the detected project stack context** (see template below).
+2. **Execute:** Spawn a `task-subagent` (agent definition: `../../agents/task-subagent.md`) with the task file contents, **prefixed with the detected project stack context** (see template below).
 3. **Instruct sub-agent to save transcript:** Add instructions to save the transcript to `.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/[transcript-name].md`.
 4. **Standard Review:** When the sub-agent returns, DO NOT immediately mark the task complete. Check `git status --short` and relevant diffs to ensure the sub-agent didn't touch forbidden files. 
 5. **Boundary Review (Conditional):** If the task introduced, modified, or renamed a **public contract** (e.g., shared config, API boundary, core interface) that downstream tasks consume:
@@ -93,16 +95,16 @@ This is an existing project. Use only the technologies listed below. Do not intr
 
 **Sign-Off Section:**
 - Mark phase milestones as complete when all phase tasks finish
-- **End-of-Batch Review:** When all tasks in a phase (or the entire project) are finished, you MUST spawn a final review sub-agent. Instruct it to read `../coding-architect/SKILL.md` and perform a full, cross-cutting architectural review of the completed work.
+- **End-of-Batch Review:** When all tasks in a phase (or the entire project) are finished, you MUST spawn a final review `task-subagent`. Instruct it to read `../coding-architect/SKILL.md` and perform a full, cross-cutting architectural review of the completed work.
 
 ## Critical Rules
 
-- **MUST detect project stack first** - Read dependency files before spawning any sub-agent; never assume a stack
-- **MUST pass stack context to ALL sub-agents** - Use the prompt template above; every sub-agent must receive the detected stack
-- **MUST use sub-agents for ALL tasks** - Never execute tasks directly yourself
-- **MUST instruct sub-agents to save transcripts** - Add to task prompt: "Save a copy of your full transcript to `.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/[transcript-name].md`"
+- **MUST detect project stack first** - Read dependency files before spawning any `task-subagent`; never assume a stack
+- **MUST pass stack context to ALL `task-subagent` runs** - Use the prompt template above; every `task-subagent` must receive the detected stack
+- **MUST use `task-subagent` for ALL tasks** - Never execute tasks directly yourself; the agent definition is at `../../agents/task-subagent.md`
+- **MUST instruct `task-subagent` to save transcripts** - Add to task prompt: "Save a copy of your full transcript to `.agent-tasks/tasks/[YYYYMMDD-task-folder]/agent-transcripts/[transcript-name].md`"
 - **MUST review work before completing** - Perform a Standard Review on every task, and a Boundary Review (using `coding-architect`) on tasks that change public contracts.
-- **MUST perform an End-of-Batch Review** - Run a full `coding-architect` review sub-agent at the end of a phase or project.
+- **MUST perform an End-of-Batch Review** - Spawn a `task-subagent` to run a full `coding-architect` review at the end of a phase or project.
 - **Respect dependencies** - Check execution order before starting tasks
 - **Update as you go** - Keep the orchestrator document current
 - **Move files** - Task files must move through status folders as work progresses

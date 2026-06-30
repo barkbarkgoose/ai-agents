@@ -28,7 +28,7 @@ Read and internalize (located in this skill folder):
 - `TASK_CREATION_GUIDE.md` — Task file format and writing rules
 
 Also read the relevant skill:
-- `../coding-architect/SKILL.md` — Use strictly for high-level structural guidance (e.g., cohesive modules, minimal contracts). Do NOT use it to over-specify variable names, internal function logic, or micro-optimizations in the task descriptions.
+- `../coding-architect/SKILL.md` — Use it to shape task scope around maintainability, downstream impact, reuse of existing code paths, and local simplification opportunities. Do NOT use it to over-specify variable names, internal function logic, or micro-optimizations in the task descriptions.
 
 ### 1.5. Detect Project Stack
 
@@ -46,6 +46,9 @@ Read the provided research/audit documents and identify:
 - Discrete pieces of work that can be completed independently
 - Dependencies between pieces of work
 - Any work that requires further research (separate from implementation)
+- Existing code paths, shared contracts, or modules that implementation tasks should likely reuse or extend
+- Places where a naive implementation would duplicate logic or create parallel flows
+- Downstream callers, tests, configs, or consumers that tasks should call out when contracts or data flow may change
 
 ### 3. Create Task Files
 
@@ -56,6 +59,9 @@ For each piece of work identified:
 3. Follow the task format defined in `TASK_CREATION_GUIDE.md`
 4. Set appropriate category (`implementation` or `research`)
 5. For **implementation tasks** on an existing project, include a `## Project Stack` section with the detected technologies so the executing agent does not need to guess
+6. For **implementation tasks**, include scope guidance that tells the executing agent to prefer reusing or extending existing code paths over creating duplicate flows when such reuse is reasonable
+7. When a task may change contracts, data flow, or shared modules, explicitly call out the likely downstream touchpoints the executing agent should verify
+8. When a small local simplification is directly related to the task, allow it in the task description rather than forcing a copy of an existing bad pattern
 
 ### 4. Report Results
 
@@ -81,6 +87,9 @@ Before finalizing each task, verify:
 - [ ] Verification criteria are specific
 - [ ] Category is set correctly
 - [ ] Dependencies reference other task IDs (if any)
+- [ ] Task encourages reuse or centralization when appropriate instead of duplicating code paths
+- [ ] Task calls out downstream impact when contracts, shared modules, or data flow may change
+- [ ] Task allows safe local improvement without opening the door to broad unrelated cleanup
 
 ## Example Invocation
 
