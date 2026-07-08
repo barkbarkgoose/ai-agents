@@ -6,6 +6,12 @@
     "model": "minimax-coding-plan/MiniMax-M3"
   },
   "harnesses": {
-    "opencode": {}
+    "opencode": {},
+    "claude": {
+      "mode": null,
+      "model": "haiku",
+      "tools": "Read, Write, Edit, Grep, Glob, Bash",
+      "color": "blue"
+    }
   }
 }

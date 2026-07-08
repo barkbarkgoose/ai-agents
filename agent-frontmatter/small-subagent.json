@@ -6,6 +6,12 @@
     "model": "google/gemma-4-31b-it"
   },
   "harnesses": {
-    "opencode": {}
+    "opencode": {},
+    "claude": {
+      "mode": null,
+      "model": "haiku",
+      "tools": "Read, Write, Edit, Grep, Glob, Bash",
+      "color": "orange"
+    }
   }
 }

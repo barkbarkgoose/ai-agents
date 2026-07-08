@@ -6,6 +6,11 @@
   "harnesses": {
     "opencode": {
       "mode": "subagent"
+    },
+    "claude": {
+      "model": "sonnet",
+      "tools": "Read, Write, Grep, Glob, WebFetch, WebSearch",
+      "color": "green"
     }
   }
 }

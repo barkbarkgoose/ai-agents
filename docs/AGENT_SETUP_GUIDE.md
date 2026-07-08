@@ -1,27 +1,30 @@
 # Agent & Skill Setup Guide
 
-A reference for setting up agentic workflows with **OpenCode** (and Kilo via OpenCode compatibility).
+A reference for setting up agentic workflows with **OpenCode** (and Kilo via OpenCode compatibility) and **Claude Code**.
 
 **Note:** AI tooling evolves rapidly. Always check the official documentation for the latest requirements.
 - [OpenCode Docs](https://opencode.ai/docs)
 - [Kilo Docs](https://kilo.ai/docs)
+- [Claude Code Docs](https://code.claude.com/docs)
+  - [Claude Agents Docs](https://code.claude.com/docs/en/sub-agents)
 
 ---
 
 ## Quick Reference
 
-| Feature | OpenCode / Kilo |
-|---------|----------------|
-| **Concept** | Agents + Skills |
-| **File Structure** | Agents: `<name>.md`<br>Skills: `<name>/SKILL.md` |
-| **Global Location (OpenCode)** | `~/.config/opencode/agents/`<br>`~/.config/opencode/skills/` |
-| **Global Location (Kilo)** | `~/.config/kilo/agents/`<br>`~/.config/kilo/skills/` |
-| **Required Fields (agents)** | `name`, `description` (recommended: `mode`, `model`, `tools`, `permission`) |
-| **Required Fields (skills)** | `name`, `description` |
+| Feature | OpenCode / Kilo | Claude Code |
+|---------|----------------|-------------|
+| **Concept** | Agents + Skills | Agents + Skills |
+| **File Structure** | Agents: `<name>.md`<br>Skills: `<name>/SKILL.md` | Agents: `<name>.md`<br>Skills: `<name>/SKILL.md` |
+| **Global Location (OpenCode)** | `~/.config/opencode/agents/`<br>`~/.config/opencode/skills/` | — |
+| **Global Location (Kilo)** | `~/.kilo/agents/`<br>`~/.kilo/skills/` | — |
+| **Global Location (Claude Code)** | — | `~/.claude/agents/`<br>`~/.claude/skills/` |
+| **Required Fields (agents)** | `name`, `description` (recommended: `mode`, `model`, `tools`, `permission`) | `name`, `description` (recommended: `tools`, `model`, `color`) |
+| **Required Fields (skills)** | `name`, `description` | `name`, `description` |
 
 ---
 
-## Agent Modes
+## Agent Modes (OpenCode / Kilo only)
 
 | Mode | Behavior |
 |------|----------|
@@ -29,9 +32,13 @@ A reference for setting up agentic workflows with **OpenCode** (and Kilo via Ope
 | `subagent` | Hidden from the main UI; only invocable via the `Task` tool by another agent. |
 | `all` | Both primary and subagent. |
 
+Claude Code has no `mode` concept — every agent under `~/.claude/agents/` is invocable via the `Task` tool.
+
 ---
 
 ## Agent Frontmatter
+
+### OpenCode / Kilo
 
 ```yaml
 ---
@@ -47,6 +54,20 @@ permission:            # optional, agent-level permissions
 ```
 
 Permission actions: `allow`, `ask`, `deny`.
+
+### Claude Code
+
+```yaml
+---
+name: my-agent
+description: When to use this agent
+tools: Read, Grep, Glob, Bash   # comma-separated allowlist, not a YAML array
+model: sonnet                   # sonnet | opus | haiku | inherit
+color: cyan                     # optional UI color
+---
+```
+
+Claude Code has no `permission` map and no `mode` field — grant capability with `tools` instead, and note that `model` only accepts Claude model aliases (not `provider/model` strings or local-model references).
 
 ---
 
@@ -96,9 +117,9 @@ Then the `small-subagent` frontmatter can reference `lmstudio/gemma-4-26b`.
 - Top-level persona with a specific model/permissions → agent.
 - Reusable domain expertise shared across agents → skill.
 2. **Write the file** under `./agents/` or `./skills/<name>/`.
-3. **Add frontmatter JSON** under `./agent-frontmatter/<name>.json` if you want harness-specific overrides. Otherwise the `.defaults` block applies to all harnesses.
-4. **Run `./sync.sh`** to deploy to both `~/.config/opencode/` (stock OpenCode) and `~/.config/kilo/` (Kilo).
-5. **Test** by selecting the agent in OpenCode or Kilo.
+3. **Add frontmatter JSON** under `./agent-frontmatter/<name>.json` if you want harness-specific overrides. The `.defaults` block applies to all harnesses; add a `harnesses.claude` block (and set OpenCode-only keys like `mode`/`permission` to `null` there) if the agent needs Claude-specific `tools`/`model`/`color`.
+4. **Run `./sync.sh`** to deploy to `~/.config/opencode/` (stock OpenCode), `~/.kilo/` (Kilo), and `~/.claude/` (Claude Code).
+5. **Test** by selecting the agent in OpenCode, Kilo, or Claude Code.
 
 ---
 
@@ -106,6 +127,7 @@ Then the `small-subagent` frontmatter can reference `lmstudio/gemma-4-26b`.
 
 - The `tools` field is **deprecated** in favor of `permission`. Do not use `tools: [...]` arrays in agent frontmatter; instead, grant/deny actions via the `permission` map.
 - `tools: ["task", "read", "grep", "glob", "bash"]` in YAML is rejected by OpenCode's strict parser as a malformed value. Use `permission: { task: "allow", bash: "allow", edit: "deny", write: "deny" }` instead.
+- This is the opposite of Claude Code, where `tools` is the mechanism and `permission` doesn't exist — keep the two harness blocks separate in `agent-frontmatter/*.json` rather than sharing keys between them.
 
 ---
 
@@ -113,9 +135,9 @@ Then the `small-subagent` frontmatter can reference `lmstudio/gemma-4-26b`.
 
 ### From a multi-harness setup
 
-- Collapse per-harness frontmatter blocks down to `opencode` only.
-- Remove Cursor-, Claude-, Gemini-, Codex-, and oh-my-pi-specific keys.
-- The `sync.sh` script writes to both `~/.config/opencode/` and `~/.config/kilo/`. Kilo does **not** read `~/.config/opencode/`; it uses `~/.config/kilo/` as its XDG global root.
+- Keep per-harness frontmatter blocks for `opencode` and `claude`; Kilo reuses the `opencode` block.
+- Remove Cursor-, Gemini-, Codex-, and oh-my-pi-specific keys — those harnesses aren't targeted by `sync.sh`.
+- The `sync.sh` script writes to `~/.config/opencode/`, `~/.kilo/`, and `~/.claude/`. Kilo does **not** read `~/.config/opencode/`; it uses `~/.kilo/` as its XDG global root.
 
 ### From agents-heavy to skill-first
 

@@ -14,6 +14,14 @@
     ]
   },
   "harnesses": {
-    "opencode": {}
+    "opencode": {},
+    "claude": {
+      "mode": null,
+      "permission": null,
+      "skills": null,
+      "model": "sonnet",
+      "tools": "Read, Grep, Glob, Bash, WebFetch, WebSearch",
+      "color": "cyan"
+    }
   }
 }

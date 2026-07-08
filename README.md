@@ -1,6 +1,6 @@
 # AI Agents & Skills
 
-A skill-first collection of AI agents and skills for **OpenCode** (and Kilo via OpenCode compatibility). This repository serves as both a working configuration and a template for setting up your own AI-assisted development workflows.
+A skill-first collection of AI agents and skills for **OpenCode** (and Kilo via OpenCode compatibility), plus **Claude Code**. This repository serves as both a working configuration and a template for setting up your own AI-assisted development workflows.
 
 ---
 
@@ -26,7 +26,7 @@ cd ai-agents
 
 ### 2. Run the Sync Script
 
-The sync script copies agents, commands, and skills to your OpenCode-compatible home directories:
+The sync script copies agents, commands, and skills to your OpenCode-, Kilo-, and Claude-Code-compatible home directories:
 
 ```bash
 chmod +x sync.sh
@@ -35,14 +35,16 @@ chmod +x sync.sh
 
 This syncs the shared `./agents`, `./commands`, and `./skills` to:
 - `~/.config/opencode/` — read by stock OpenCode.
-- `~/.config/kilo/` — read by Kilo (Kilo's XDG global root, distinct from `~/.config/opencode/`).
+- `~/.kilo/` — read by Kilo (Kilo's XDG global root, distinct from `~/.config/opencode/`).
+- `~/.claude/` — read by Claude Code.
 
 **Note:** The sync only touches the `agents/`, `commands/`, and `skills/` subdirectories.
 
 ### 3. Verify Installation
 
 - **OpenCode**: Run `opencode` and check that agents are available via `/agents` or `Ctrl+P`.
-- **Kilo**: Run `kilo`. Kilo reads `~/.config/kilo/` as its XDG global root (not `~/.config/opencode/`).
+- **Kilo**: Run `kilo`. Kilo reads `~/.kilo/` as its XDG global root (not `~/.config/opencode/`).
+- **Claude Code**: Run `claude` and check that agents are available via `/agents`.
 
 ---
 
@@ -75,6 +77,8 @@ ai-agents/
 | `research` | subagent | (defaults) | Conducts external research using the `gemini-researcher` skill. |
 | `small-model-orchestrator` | primary | `openai/gpt-5.5` | Plans work and delegates all writes/edits to `small-subagent`. Reviews each phase and spawns follow-up tasks for corrections. |
 | `small-subagent` | subagent | `lmstudio/gemma-4-26b` | Performs scoped edits, traces imports/usages, reports back. |
+
+Models and permissions above are the OpenCode/Kilo defaults. Claude Code has its own `harnesses.claude` block in each `agent-frontmatter/<name>.json` (Claude uses model aliases like `sonnet`/`haiku` and a `tools` allowlist instead of `permission`), so e.g. `small-subagent` maps to `haiku` under Claude rather than a local LM Studio model.
 
 ### Smart Orchestrator Workflow
 
@@ -115,7 +119,7 @@ The orchestrator never writes or edits files directly.
 
 ## Documentation
 
-- **[Agent Setup Guide](docs/AGENT_SETUP_GUIDE.md)** - OpenCode/Kilo + oh-my-pi setup details, frontmatter requirements, and file structures.
+- **[Agent Setup Guide](docs/AGENT_SETUP_GUIDE.md)** - OpenCode/Kilo/Claude Code + oh-my-pi setup details, frontmatter requirements, and file structures.
 - **[Writing Useful Agents](docs/WRITING_USEFUL_AGENTS.md)** - How to write agents and skills that actually work.
 - **[LLM Agent Context Limitations](docs/llm-agent-context-limitations.md)** - Why self-contained prompts beat modular file chains.
 - **[Running Local Models](docs/LOCAL_MODELS.md)** - Set up llama.cpp / LM Studio with OpenCode-compatible CLIs.
@@ -127,7 +131,7 @@ The orchestrator never writes or edits files directly.
 ### Agents not appearing
 
 1. Verify the sync completed: `./sync.sh`
-2. Check file permissions: `ls -la ~/.config/opencode/agents/ ~/.config/kilo/agents/`
+2. Check file permissions: `ls -la ~/.config/opencode/agents/ ~/.kilo/agents/ ~/.claude/agents/`
 3. Restart your AI tool
 4. Verify frontmatter syntax (YAML is whitespace-sensitive)
 

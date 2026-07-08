@@ -12,6 +12,13 @@
     }
   },
   "harnesses": {
-    "opencode": {}
+    "opencode": {},
+    "claude": {
+      "mode": null,
+      "permission": null,
+      "model": "sonnet",
+      "tools": "Read, Grep, Glob, Bash, Task",
+      "color": "purple"
+    }
   }
 }
