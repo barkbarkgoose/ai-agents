@@ -1,131 +1,106 @@
 ---
 name: quick-learn
-description: Transforms dense technical readings, documentation, architectures, or unfamiliar concepts into high-retention, visual, story-driven learning guides. Uses origin stories, visual mental models (Mermaid/ASCII), real-world analogies, and narrative lifecycle walkthroughs designed for visual, ADHD-friendly, and narrative-first learners. Use when learning new concepts, previewing documentation, preparing to dive into unfamiliar codebases, or unpacking complex topics.
+description: Transforms dense technical readings, documentation, architectures, or unfamiliar concepts into high-retention, progressively scaffolded visual learning guides. Starts with a crisp 1-2 sentence definition and a conceptual ladder of progressive statements before moving to visual architecture (Mermaid), concrete lifecycle traces, hands-on sparks, and sharp edges. Designed for visual, ADHD-friendly learning without forced narrative fluff. Supports self-contained HTML outputs styled with Tailwind CDN. Use when learning new concepts, previewing documentation, preparing to dive into unfamiliar codebases, or unpacking complex topics.
 ---
 
-# Quick-Learn: Story & Visual Scaffolding
+# Quick-Learn: Progressive Technical Scaffolding
 
-Quick-Learn turns abstract, dense technical topics into memorable, intuitive mental models.
+Quick-Learn turns abstract, dense, or unfamiliar technical topics into intuitive, memorable mental models.
 
 ## Why This Skill Exists (Cognitive Philosophy)
 
-When learning unfamiliar technical topics cold, abstract definitions and dry bulleted summaries often cause **attention glaze-over** and zero retention. 
+When jumping into something completely new—especially when learning multiple concepts at once—two failure modes frequently happen:
 
-This happens when the brain lacks an intuitive **frame of reference** and a **visual image** to anchor incoming details. 
+1. **The Spec Sheet Trap:** Dry reference documentation dumps raw jargon, API tables, and syntax before the brain has any context. Without an existing mental filing cabinet, words float unanchored and eyes glaze over.
+2. **The Forced Story Trap:** Overly elaborate storytelling (novel-like narratives, villains, epiphanies, multi-character kitchen sagas) forces "dual-mapping." You have to track the metaphor *and* map it to the tech, adding cognitive tax instead of reducing it.
 
-Humans—especially narrative-driven, visual, and ADHD minds—retain complex information effortlessly when it is delivered through:
-1. **The Origin Story (Context & Conflict):** Why this was invented, what pain existed before it, and what problem it solves.
-2. **The Visual Mental Model (Spatial Anchor):** A vivid physical analogy and a clear visual diagram (Mermaid/ASCII) establishing the territory before diving into details.
-3. **The Plot in Motion (Dynamic Flow):** Walking through a concrete lifecycle from start to finish (cause-and-effect journey).
-4. **The Field Guide (Scannable Details):** Detailed mechanics, trade-offs, and source links mapped cleanly back to the visual framework.
-
-Never dump raw, unanchored terminology or dry dictionary definitions. Always build the visual and narrative container first, so every technical detail lands on a pre-built mental scaffold.
-
----
-
-## The 5-Stage Learning Framework
-
-When given a topic, article, chapter, codebase, or document to explain, produce the guide using these 5 stages in order:
-
-```mermaid
-flowchart LR
-    A["1. Origin Story<br/>(The History & Conflict)"] --> B["2. Visual Mental Model<br/>(Analogy & Diagram)"]
-    B --> C["3. Cast of Characters<br/>(Core Concepts & Roles)"]
-    C --> D["4. The Journey<br/>(Step-by-Step Flow)"]
-    D --> E["5. The Field Guide<br/>(Mechanics & Traps)"]
-```
+### The Cognitive Fix: Progressive Scaffolding
+- **Immediate Anchor:** State what the thing is in 1–2 plain-English sentences right away.
+- **The Conceptual Ladder:** Give the brain 3–5 progressive bullet points that build the concept from first principles before getting into mechanics.
+- **Lean Physical Anchors & Visual Maps:** Use a 1-sentence physical anchor and a clear Mermaid diagram to show boundaries and flow.
+- **Trace the Byte:** Trace one concrete operation end-to-end to cement how pieces interact.
+- **Hands-on Spark:** Provide a 60-second command or experiment to touch the system directly.
 
 ---
 
-### Stage 1 — The Origin Story & Conflict (The "History" Hook)
+## Guide Structure Template
 
-Set the historical scene and establish the stakes before defining any technical jargon.
-- **The World Before (The "Old Way"):** What did engineers/users do before this existed?
-- **The Villain / The Breaking Point:** What failed? What pain, bottleneck, or bug made the old way unbearable at scale?
-- **The Epiphany / Breakthrough:** What core insight led to this solution? What is its single reason to exist?
+When explaining an unfamiliar system, architecture, codebase, or concept, produce the guide following this structure:
 
-*Rule:* Write this in an engaging, narrative voice (like a history lecture or audiobook). Make the reader feel the pain of the problem so the solution feels earned and obvious.
+### 1. The 10-Second Anchor (Plain-English Definition)
+- **What it is:** 1–2 plain-English sentences defining the system without buzzwords or forced metaphors.
+- **Category & Core Job:** Category (e.g. *Local Daemon / Wire Protocol / State Machine / Library*) + the single core problem it solves.
 
----
+### 2. The Conceptual Ladder (Progressive Understanding)
+A sequence of 3–5 bullet points where each statement builds on the previous one:
+- **Baseline:** The familiar starting point or foundational reality everyone recognizes.
+- **The Friction:** The exact bottleneck or point of failure that occurs as complexity grows.
+- **The Core Shift:** The missing concept or architectural leap that resolves that friction.
+- **How This Tool Does It:** How the specific subject implements that breakthrough.
+- **The Mental Takeaway:** The final, stable mental model to hold onto.
 
-### Stage 2 — The Visual Mental Model & Architecture Map
+### 3. Visual Architecture & Boundary Map
+- **The Anchor Analogy (1 sentence max):** A quick physical anchor grounding the system (e.g., *"Think of it like an order rail pinned between a head chef and line cooks, not a shared brain"*).
+- **Mermaid Diagram:** Clean flowchart or architecture diagram showing boundaries, data flow, ports, and protocols. Keep it scannable in 5 seconds.
+- **The Division of Labor (Contrast Table):** Clarify boundaries early to prevent confusion.
+  - E.g., *Control Plane vs. Data Plane*, or *What it Does vs. What it Does NOT Do*.
 
-Give the reader a concrete mental picture and spatial frame of reference.
-- **The Real-World / Physical Analogy:** Ground the abstract concept in a familiar physical system (e.g., *“Think of Kafka like a factory conveyor belt with multiple inspection cameras...”* or *“Think of React Virtual DOM like an architect editing blueprints with tracing paper before pouring concrete...”*).
-- **The Visual Diagram:** Always provide a clear, readable **Mermaid diagram** (flowchart, sequence, or architecture) or ASCII diagram showing:
-  - The major components and boundaries.
-  - Direction of data flow and interactions.
-  - Spatial relationships (who talks to whom, what sits where).
+### 4. The Cast of Characters
+List the 3–5 key components or concepts, ordered from foundation/storage to orchestrator/caller:
+- **Role:** Plain-English description.
+- **Owns:** 1–2 bullet points on what it is responsible for.
+- **Doesn't Touch:** What it explicitly leaves to other components.
+- **Contract / Interface:** The primary API, schema, event, or CLI command it uses.
 
-*Rule:* The diagram must be scannable in 5 seconds. Avoid overwhelming clutter; focus on topology and flow.
+### 5. The Lifecycle Walkthrough ("Follow the Request")
+Pick ONE realistic, concrete scenario and trace it step-by-step:
+1. **The Trigger:** Who initiates the action and what payload/command is sent.
+2. **Step-by-Step Flow:** Numbered chronological steps showing handoffs, state changes, and disk/network operations.
+3. **Sequence Diagram:** A clean Mermaid sequence diagram showing message passing between actors.
+4. **The Resolution:** What returns to the caller and what persistent state remains.
 
----
+### 6. The 60-Second Hands-On Spark
+A tiny, concrete experiment or mental sandbox:
+- A 3-line `curl` command, CLI invocation, REPL snippet, or minimal config showing how to touch, test, or verify the system with your own hands.
 
-### Stage 3 — The Cast of Characters (Concept Scaffolding)
-
-Introduce the core concepts (5–10 key terms/components) as a **dramatis personae**—who they are, their specific job in the system, and how they relate to the other players.
-
-Format each character with:
-- **[Concept / Component Name]:** The Role / Moniker.
-- **Job Description:** 1–2 punchy sentences on what it does and why it exists.
-- **Key Relationship:** Who it interacts with or depends on (e.g., *"Feeds directly into...", "Supervises..."*).
-
-*Rule:* Order them by dependency (foundational building blocks first, orchestrators later), not alphabetical order.
-
----
-
-### Stage 4 — The Plot in Motion ("Follow the Journey")
-
-Walk through a concrete, end-to-end story of the system in action.
-
-Pick a single tangible scenario (e.g., *"Follow a user click from the browser button all the way to disk write and back"*, or *"Trace a single message through the queue during an outage"*).
-
-Break the journey into numbered, chronological beats:
-1. **The Trigger / Inciting Incident:** What kicks off the process?
-2. **Handoffs & Transformations:** How is data changed, routed, or verified at each step?
-3. **The Climax / Core Work:** Where does the real magic happen?
-4. **The Resolution / Feedback Loop:** How does the system settle back into steady state?
-
-*Rule:* Use active, visual language that reads naturally like an audiobook narration.
+### 7. The Field Guide (Gotchas & Sharp Edges)
+- **Traps & Plot Twists:** 2–4 subtle bugs, hidden default assumptions, or common misconceptions that trip people up.
+- **When to Reach for This vs. When to Walk Away:** Clear, bulleted decision criteria.
+- **Deep-Dive Coordinates:** Exact files, lines, or official doc sections to inspect next.
 
 ---
 
-### Stage 5 — The Field Guide (Practical Mechanics, Traps & Links)
+## Tone & Delivery Guidelines
 
-Now that the reader has the complete mental map and story, provide the high-value technical reference:
-- **Code in Action / Concrete Syntax:** A compact, annotated code snippet or config example directly tied to the concepts above.
-- **Plot Twists & Traps (Gotchas & Trade-offs):** Where do people get burned? What are the common illusions, footguns, or edge cases?
-- **When to Use / When to Avoid:** Clear mental boundary rules.
-- **Deep-Dive Coordinates / Source Links:** Links to specific docs, repo files, or sections for deeper exploration.
-
----
-
-## Tone & Delivery Rules (Anti-Glaze Design)
-
-1. **Audiobook / Conversational Momentum:** Write with energy and clarity. Use active verbs, natural transitions (*"Here's where things get tricky..."*, *"Now notice what happens when..."*), and avoid dry academic passive voice.
-2. **Chunked & Scannable:** Keep paragraphs short (2–4 sentences max). Use bold anchors for key terms. Break dense information with callouts and lists.
-3. **Never Drop Naked Jargon:** If a technical term is used, immediately pair it with its purpose or visual metaphor.
-4. **Use Visual Alerts Strategically:**
-   - `> [!NOTE]` for background context / historical trivia.
-   - `> [!TIP]` for mental shortcuts and mnemonic aids.
-   - `> [!WARNING]` for footguns and common misconceptions.
+- **Concise, punchy, and direct:** Write like a pragmatic staff engineer whiteboarding with you.
+- **No forced melodrama:** Keep metaphors light and functional. Avoid forced story labels ("The Villain", "The Climax", "Act I").
+- **Chunked & Scannable:** Keep paragraphs short (2–3 sentences max). Use bold anchors for key terms.
+- **Callout badges:**
+  - `> 💡 **Tip**`: Mental shortcuts, practical habits, or memory hooks.
+  - `> ⚠️ **Sharp Edge**`: Gotchas, failure modes, or breaking assumptions.
 
 ---
 
-## Output Formats
+## Output Formats & Delivery
 
-- **Chat Response (Quick / Conversational):** For quick questions or rapid previews ("give me a quick-learn on WebSockets"), output directly in markdown in chat.
-- **Artifact / Document (In-depth Guides / Readings / Repo Reference):** When breaking down a major paper, textbook chapter, complex codebase feature, or long documentation set, create a structured markdown guide artifact or file (e.g. `guide.md` or `quick-learn-[topic].md`) alongside the source material.
+### 1. Markdown (Default)
+Standard GitHub-flavored Markdown with Mermaid code blocks, bullet points, and callout quotes.
 
----
-
-## Quality Checklist
-
-Before delivering a Quick-Learn guide, verify:
-- [ ] **History & Stakes:** Did I explain the world *before* this concept and the problem that forced its creation?
-- [ ] **Visual Metaphor:** Is there a concrete, relatable real-world physical analogy?
-- [ ] **Visual Diagram:** Is there an intuitive Mermaid/ASCII diagram showing structure and flow?
-- [ ] **Cast of Characters:** Are the core terms introduced with clear roles and dependencies?
-- [ ] **Sequential Journey:** Is there an end-to-end "day in the life / follow the request" walkthrough?
-- [ ] **Gotchas & Traps:** Are real-world trade-offs and common misunderstandings highlighted?
-- [ ] **Readability:** Is the tone energetic, chunked, and free of dry academic walls of text?
+### 2. Self-Contained HTML Document (When Requested)
+When the user asks for an HTML document or self-contained guide, generate a single `.html` file that opens beautifully without any local server or build tools:
+- **Tailwind CSS CDN:** Load via `<script src="https://cdn.tailwindcss.com"></script>`.
+- **Mermaid.js CDN:** Include client-side Mermaid rendering:
+  ```html
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+  </script>
+  ```
+- **Styling Requirements:**
+  - Responsive container: `max-w-4xl mx-auto px-6 py-10`.
+  - Clean typography and palette (e.g. `bg-slate-50 text-slate-800` with dark-friendly options).
+  - Component cards with soft borders (`bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-8`).
+  - Styled callouts with clear colored borders and badges for `Tip` and `Sharp Edge`.
+  - Dark-styled code blocks (`bg-slate-900 text-slate-100 p-4 rounded-lg font-mono text-sm overflow-x-auto`).
+  - Pre-rendered or containerized `<div class="mermaid">` blocks ready for Mermaid.js to hydrate.
+  - Standalone: zero external local dependencies, instantly readable offline or when opened directly in a browser (`file://`).
