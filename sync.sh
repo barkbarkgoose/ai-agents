@@ -1,11 +1,12 @@
 #!/bin/bash
-# sync.sh - Sync top-level project directories to OpenCode-, Kilo-, and
-# Claude-Code-compatible home directories. Kilo reads its own XDG root at
-# ~/.config/kilo/ (not ~/.config/opencode/); Claude Code reads ~/.claude/.
+# sync.sh - Sync top-level project directories to OpenCode-, Kilo-,
+# Claude-Code-, and Gemini-compatible home directories. Kilo reads its own XDG
+# root at ~/.config/kilo/ (not ~/.config/opencode/); Claude Code reads ~/.claude/;
+# Gemini reads ~/.gemini/.
 #
-# Agents sync to:   ~/.config/opencode/agents/, ~/.kilo/agents/, ~/.claude/agents/
-# Commands sync to: ~/.config/opencode/commands/, ~/.kilo/commands/, ~/.claude/commands/
-# Skills sync to:   ~/.config/opencode/skills/, ~/.kilo/skills/, ~/.claude/skills/
+# Agents sync to:   ~/.config/opencode/agents/, ~/.kilo/agents/, ~/.claude/agents/, ~/.gemini/agents/
+# Commands sync to: ~/.config/opencode/commands/, ~/.kilo/commands/, ~/.claude/commands/, ~/.gemini/commands/
+# Skills sync to:   ~/.config/opencode/skills/, ~/.kilo/skills/, ~/.claude/skills/, ~/.gemini/skills/
 #
 # Note: oh-my-pi (omp) is not targeted here. omp does not expose a
 # user-level agents/commands/skills directory; it uses ~/.omp/agent/ for
@@ -15,20 +16,22 @@ set -e  # Exit on error
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Three destination roots. Kilo reads ~/.kilo/ as its XDG global root; stock
-# OpenCode reads ~/.config/opencode/; Claude Code reads ~/.claude/. All three
-# must be kept in sync.
+# Destination roots. Kilo reads ~/.kilo/ as its XDG global root; stock OpenCode
+# reads ~/.config/opencode/; Claude Code reads ~/.claude/; Gemini reads ~/.gemini/.
+# All must be kept in sync.
 OPENCODE_DEST="$HOME/.config/opencode"
 KILO_DEST="$HOME/.kilo"
 CLAUDE_DEST="$HOME/.claude"
+GEMINI_DEST="$HOME/.gemini"
 
 # Agent frontmatter is harness-specific. Kilo consumes OpenCode-compatible
 # frontmatter, so it shares the "opencode" harness config; Claude Code needs
-# its own "claude" harness block (see agent-frontmatter/*.json).
-AGENT_DEST_ROOTS=("$OPENCODE_DEST" "$KILO_DEST" "$CLAUDE_DEST")
-AGENT_HARNESSES=("opencode" "opencode" "claude")
+# its own "claude" harness block; Gemini uses its own "gemini" harness block
+# (see agent-frontmatter/*.json).
+AGENT_DEST_ROOTS=("$OPENCODE_DEST" "$KILO_DEST" "$CLAUDE_DEST" "$GEMINI_DEST")
+AGENT_HARNESSES=("opencode" "opencode" "claude" "gemini")
 
-ALL_DEST_ROOTS=("$OPENCODE_DEST" "$KILO_DEST" "$CLAUDE_DEST")
+ALL_DEST_ROOTS=("$OPENCODE_DEST" "$KILO_DEST" "$CLAUDE_DEST" "$GEMINI_DEST")
 
 # Function to sync a directory if it exists. Files in the destination that are
 # not present in the source are preserved -- this avoids pruning files the
@@ -76,5 +79,12 @@ for dest_root in "${ALL_DEST_ROOTS[@]}"; do
   echo "    -> ${dest_dir/#$HOME/~}"
   sync_if_exists "$SCRIPT_DIR/skills" "$dest_dir" "skills"
 done
+
+# Link Gemini global config root to harness directories for Antigravity Chat/Editor
+echo " ------ Linking Antigravity config ------"
+mkdir -p "$GEMINI_DEST/config"
+ln -sfn "$GEMINI_DEST/skills" "$GEMINI_DEST/config/skills"
+ln -sfn "$GEMINI_DEST/agents" "$GEMINI_DEST/config/agents"
+[[ -d "$GEMINI_DEST/commands" ]] && ln -sfn "$GEMINI_DEST/commands" "$GEMINI_DEST/config/commands"
 
 echo "Sync complete!"

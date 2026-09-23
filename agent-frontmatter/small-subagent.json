@@ -12,6 +12,10 @@
       "model": "haiku",
       "tools": "Read, Write, Edit, Grep, Glob, Bash",
       "color": "orange"
+    },
+    "gemini": {
+      "mode": null,
+      "model": null
     }
   }
 }

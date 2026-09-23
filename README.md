@@ -1,6 +1,6 @@
 # AI Agents & Skills
 
-A skill-first collection of AI agents and skills for **OpenCode** (and Kilo via OpenCode compatibility), plus **Claude Code**. This repository serves as both a working configuration and a template for setting up your own AI-assisted development workflows.
+A skill-first collection of AI agents and skills for **OpenCode** (and Kilo via OpenCode compatibility), **Claude Code**, and **Gemini** (Antigravity). This repository serves as both a working configuration and a template for setting up your own AI-assisted development workflows.
 
 ---
 
@@ -26,7 +26,7 @@ cd ai-agents
 
 ### 2. Run the Sync Script
 
-The sync script copies agents, commands, and skills to your OpenCode-, Kilo-, and Claude-Code-compatible home directories:
+The sync script copies agents, commands, and skills to your OpenCode-, Kilo-, Claude-Code-, and Gemini-compatible home directories:
 
 ```bash
 chmod +x sync.sh
@@ -37,6 +37,11 @@ This syncs the shared `./agents`, `./commands`, and `./skills` to:
 - `~/.config/opencode/` — read by stock OpenCode.
 - `~/.kilo/` — read by Kilo (Kilo's XDG global root, distinct from `~/.config/opencode/`).
 - `~/.claude/` — read by Claude Code.
+- `~/.gemini/` — read by Gemini / Antigravity CLI.
+
+> [!NOTE]
+> **Antigravity CLI vs. Editor / Chat**: The Antigravity CLI reads agents and skills from `~/.gemini/agents/` and `~/.gemini/skills/`, whereas the Antigravity Editor, IDE, and Chat discover global customizations under `~/.gemini/config/` (specifically `~/.gemini/config/skills/` and `~/.gemini/config/agents/`).
+> `sync.sh` automatically establishes symlinks from `~/.gemini/config/{skills,agents,commands}` to `~/.gemini/{skills,agents,commands}` so both interfaces share the exact same definitions with zero duplication.
 
 **Note:** The sync only touches the `agents/`, `commands/`, and `skills/` subdirectories.
 
@@ -45,6 +50,7 @@ This syncs the shared `./agents`, `./commands`, and `./skills` to:
 - **OpenCode**: Run `opencode` and check that agents are available via `/agents` or `Ctrl+P`.
 - **Kilo**: Run `kilo`. Kilo reads `~/.kilo/` as its XDG global root (not `~/.config/opencode/`).
 - **Claude Code**: Run `claude` and check that agents are available via `/agents`.
+- **Gemini / Antigravity**: Run `gemini` or `agy` in the terminal, or check available skills/agents in Antigravity Editor/Chat.
 
 ---
 
@@ -131,7 +137,7 @@ The orchestrator never writes or edits files directly.
 ### Agents not appearing
 
 1. Verify the sync completed: `./sync.sh`
-2. Check file permissions: `ls -la ~/.config/opencode/agents/ ~/.kilo/agents/ ~/.claude/agents/`
+2. Check file permissions: `ls -la ~/.config/opencode/agents/ ~/.kilo/agents/ ~/.claude/agents/ ~/.gemini/agents/`
 3. Restart your AI tool
 4. Verify frontmatter syntax (YAML is whitespace-sensitive)
 
