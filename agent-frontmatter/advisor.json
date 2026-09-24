@@ -3,7 +3,7 @@
     "name": "advisor",
     "description": "Primary ask-only agent for questions, architecture discussion, tradeoff analysis, debugging advice, and code review guidance. It must not write or edit files.",
     "mode": "primary",
-    "model": "openai/gpt-5.4",
+    "model": "google/gemini-flash-latest",
     "permission": {
       "write": "deny",
       "edit": "deny",
@@ -22,6 +22,12 @@
       "model": "sonnet",
       "tools": "Read, Grep, Glob, Bash, WebFetch, WebSearch",
       "color": "cyan"
+    },
+    "gemini": {
+      "mode": null,
+      "permission": null,
+      "skills": null,
+      "model": null
     }
   }
 }

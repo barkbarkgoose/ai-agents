@@ -1,6 +1,6 @@
 # Agent & Skill Setup Guide
 
-A reference for setting up agentic workflows with **OpenCode** (and Kilo via OpenCode compatibility) and **Claude Code**.
+A reference for setting up agentic workflows with **OpenCode** (and Kilo via OpenCode compatibility), **Claude Code**, and **Gemini** (Antigravity).
 
 **Note:** AI tooling evolves rapidly. Always check the official documentation for the latest requirements.
 - [OpenCode Docs](https://opencode.ai/docs)
@@ -12,15 +12,16 @@ A reference for setting up agentic workflows with **OpenCode** (and Kilo via Ope
 
 ## Quick Reference
 
-| Feature | OpenCode / Kilo | Claude Code |
-|---------|----------------|-------------|
-| **Concept** | Agents + Skills | Agents + Skills |
-| **File Structure** | Agents: `<name>.md`<br>Skills: `<name>/SKILL.md` | Agents: `<name>.md`<br>Skills: `<name>/SKILL.md` |
-| **Global Location (OpenCode)** | `~/.config/opencode/agents/`<br>`~/.config/opencode/skills/` | — |
-| **Global Location (Kilo)** | `~/.kilo/agents/`<br>`~/.kilo/skills/` | — |
-| **Global Location (Claude Code)** | — | `~/.claude/agents/`<br>`~/.claude/skills/` |
-| **Required Fields (agents)** | `name`, `description` (recommended: `mode`, `model`, `tools`, `permission`) | `name`, `description` (recommended: `tools`, `model`, `color`) |
-| **Required Fields (skills)** | `name`, `description` | `name`, `description` |
+| Feature | OpenCode / Kilo | Claude Code | Gemini |
+|---------|----------------|-------------|--------|
+| **Concept** | Agents + Skills | Agents + Skills | Agents + Skills |
+| **File Structure** | Agents: `<name>.md`<br>Skills: `<name>/SKILL.md` | Agents: `<name>.md`<br>Skills: `<name>/SKILL.md` | Agents: `<name>.md`<br>Skills: `<name>/SKILL.md` |
+| **Global Location (OpenCode)** | `~/.config/opencode/agents/`<br>`~/.config/opencode/skills/` | — | — |
+| **Global Location (Kilo)** | `~/.kilo/agents/`<br>`~/.kilo/skills/` | — | — |
+| **Global Location (Claude Code)** | — | `~/.claude/agents/`<br>`~/.claude/skills/` | — |
+| **Global Location (Gemini)** | — | — | `~/.gemini/agents/`<br>`~/.gemini/skills/` |
+| **Required Fields (agents)** | `name`, `description` (recommended: `mode`, `model`, `tools`, `permission`) | `name`, `description` (recommended: `tools`, `model`, `color`) | `name`, `description` |
+| **Required Fields (skills)** | `name`, `description` | `name`, `description` | `name`, `description` |
 
 ---
 
@@ -68,6 +69,19 @@ color: cyan                     # optional UI color
 ```
 
 Claude Code has no `permission` map and no `mode` field — grant capability with `tools` instead, and note that `model` only accepts Claude model aliases (not `provider/model` strings or local-model references).
+
+### Gemini (Antigravity)
+
+```yaml
+---
+name: my-agent
+description: When to use this agent
+---
+```
+
+Like skills, Gemini agents use standard `name` and `description` frontmatter. OpenCode-specific keys (`mode`, `permission`, `skills`) and Claude-specific keys (`tools`, `color`) are stripped via the `gemini` harness block in `agent-frontmatter/*.json`.
+
+**CLI vs. Editor / Chat Locations:** While the Gemini CLI reads from `~/.gemini/agents/` and `~/.gemini/skills/`, the Antigravity Editor/IDE discovers global skills and agents under `~/.gemini/config/`. The `sync.sh` script automatically symlinks `~/.gemini/config/{skills,agents,commands}` to `~/.gemini/{skills,agents,commands}` to maintain a single source of truth across both environments.
 
 ---
 
@@ -117,9 +131,9 @@ Then the `small-subagent` frontmatter can reference `lmstudio/gemma-4-26b`.
 - Top-level persona with a specific model/permissions → agent.
 - Reusable domain expertise shared across agents → skill.
 2. **Write the file** under `./agents/` or `./skills/<name>/`.
-3. **Add frontmatter JSON** under `./agent-frontmatter/<name>.json` if you want harness-specific overrides. The `.defaults` block applies to all harnesses; add a `harnesses.claude` block (and set OpenCode-only keys like `mode`/`permission` to `null` there) if the agent needs Claude-specific `tools`/`model`/`color`.
-4. **Run `./sync.sh`** to deploy to `~/.config/opencode/` (stock OpenCode), `~/.kilo/` (Kilo), and `~/.claude/` (Claude Code).
-5. **Test** by selecting the agent in OpenCode, Kilo, or Claude Code.
+3. **Add frontmatter JSON** under `./agent-frontmatter/<name>.json` if you want harness-specific overrides. The `.defaults` block applies to all harnesses; add `harnesses.claude` or `harnesses.gemini` blocks to customize or null out harness-specific keys.
+4. **Run `./sync.sh`** to deploy to `~/.config/opencode/` (stock OpenCode), `~/.kilo/` (Kilo), `~/.claude/` (Claude Code), and `~/.gemini/` (Gemini).
+5. **Test** by selecting the agent in OpenCode, Kilo, Claude Code, or Gemini.
 
 ---
 
@@ -135,9 +149,8 @@ Then the `small-subagent` frontmatter can reference `lmstudio/gemma-4-26b`.
 
 ### From a multi-harness setup
 
-- Keep per-harness frontmatter blocks for `opencode` and `claude`; Kilo reuses the `opencode` block.
-- Remove Cursor-, Gemini-, Codex-, and oh-my-pi-specific keys — those harnesses aren't targeted by `sync.sh`.
-- The `sync.sh` script writes to `~/.config/opencode/`, `~/.kilo/`, and `~/.claude/`. Kilo does **not** read `~/.config/opencode/`; it uses `~/.kilo/` as its XDG global root.
+- Keep per-harness frontmatter blocks for `opencode`, `claude`, and `gemini`; Kilo reuses the `opencode` block.
+- The `sync.sh` script writes to `~/.config/opencode/`, `~/.kilo/`, `~/.claude/`, and `~/.gemini/`. Kilo does **not** read `~/.config/opencode/`; it uses `~/.kilo/` as its XDG global root.
 
 ### From agents-heavy to skill-first
 

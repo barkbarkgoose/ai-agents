@@ -11,6 +11,7 @@
       "model": "sonnet",
       "tools": "Read, Write, Grep, Glob, WebFetch, WebSearch",
       "color": "green"
-    }
+    },
+    "gemini": {}
   }
 }

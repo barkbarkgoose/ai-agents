@@ -1,0 +1,70 @@
+{
+  "programs": [
+    {
+      "airline": "Copa Airlines",
+      "iata": "CM",
+      "hub": "PTY",
+      "city": "Panama City, Panama",
+      "name": "Panama Stopover",
+      "url": "https://www.copaair.com/en-us/panama-stopover/",
+      "min_hours": 24,
+      "max_days": 7,
+      "cost_airfare": 0,
+      "estimated_local_tax_usd": 40,
+      "rules": "Can be taken on outbound or return segment. Must be booked on original ticket via Stopover engine or Multi-City. Luggage can be checked to final destination or retrieved.",
+      "best_for": ["LAS-ASU", "MIA-ASU", "LAX-ASU", "JFK-ASU", "ORD-ASU"]
+    },
+    {
+      "airline": "TAP Air Portugal",
+      "iata": "TP",
+      "hub": "LIS",
+      "city": "Lisbon, Portugal",
+      "name": "Portugal Stopover",
+      "url": "https://www.flytap.com/en-us/stopover",
+      "min_hours": 24,
+      "max_days": 10,
+      "cost_airfare": 0,
+      "estimated_local_tax_usd": 30,
+      "rules": "Available in Lisbon or Porto. Up to 10 days with 25% discount on domestic flights."
+    },
+    {
+      "airline": "Icelandair",
+      "iata": "FI",
+      "hub": "KEF",
+      "city": "Reykjavik, Iceland",
+      "name": "Icelandair Stopover",
+      "url": "https://www.icelandair.com/flights/stopover/",
+      "min_hours": 24,
+      "max_days": 7,
+      "cost_airfare": 0,
+      "estimated_local_tax_usd": 25,
+      "rules": "Up to 7 nights in Iceland on transatlantic crossings at no extra airfare."
+    },
+    {
+      "airline": "Turkish Airlines",
+      "iata": "TK",
+      "hub": "IST",
+      "city": "Istanbul, Turkey",
+      "name": "Stopover in Istanbul",
+      "url": "https://www.turkishairlines.com/en-us/flights/stopover/",
+      "min_hours": 20,
+      "max_days": 3,
+      "cost_airfare": 0,
+      "estimated_local_tax_usd": 0,
+      "rules": "Free hotel voucher (1 night economy, 2 nights business) for layovers >= 20 hours."
+    },
+    {
+      "airline": "Avianca",
+      "iata": "AV",
+      "hub": "BOG",
+      "city": "Bogota, Colombia",
+      "name": "Bogota Connection Stopover",
+      "url": "https://www.avianca.com",
+      "min_hours": 20,
+      "max_days": 2,
+      "cost_airfare": 0,
+      "estimated_local_tax_usd": 35,
+      "rules": "Available on select multi-city fares across South American routes."
+    }
+  ]
+}
