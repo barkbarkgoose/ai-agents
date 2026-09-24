@@ -87,20 +87,295 @@ A tiny, concrete experiment or mental sandbox:
 Standard GitHub-flavored Markdown with Mermaid code blocks, bullet points, and callout quotes.
 
 ### 2. Self-Contained HTML Document (When Requested)
-When the user asks for an HTML document or self-contained guide, generate a single `.html` file that opens beautifully without any local server or build tools:
-- **Tailwind CSS CDN:** Load via `<script src="https://cdn.tailwindcss.com"></script>`.
-- **Mermaid.js CDN:** Include client-side Mermaid rendering:
-  ```html
+When the user asks for an HTML document or self-contained guide, generate a single `.html` file that opens beautifully without any local server or build tools.
+
+#### HTML Skeleton & Design System
+
+Use this exact boilerplate structure for HTML output, ensuring all cards, text, tables, and callouts support both light and dark mode:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quick-Learn: [Topic Title]</title>
+  
+  <!-- Tailwind CSS CDN with class-based Dark Mode -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              900: '#134e4a',
+            }
+          }
+        }
+      }
+    }
+
+    // Apply stored theme or fallback to system preference early to avoid flash
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.theme = isDark ? 'dark' : 'light';
+      if (window.renderDiagrams) {
+        window.renderDiagrams();
+      }
+    }
+  </script>
+
+  <!-- Mermaid.js CDN with Dynamic Theme Switching -->
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-    mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+
+    // Capture raw diagram source before rendering
+    const diagramElements = Array.from(document.querySelectorAll('.mermaid')).map((el, i) => {
+      return {
+        el,
+        code: el.textContent.trim(),
+        baseId: `mermaid-diagram-${i}`
+      };
+    });
+
+    async function renderDiagrams() {
+      const isDark = document.documentElement.classList.contains('dark');
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: isDark ? 'dark' : 'neutral',
+        securityLevel: 'loose',
+        flowchart: { curve: 'basis' }
+      });
+
+      for (let i = 0; i < diagramElements.length; i++) {
+        const item = diagramElements[i];
+        const renderId = `${item.baseId}-${Date.now()}-${i}`;
+        try {
+          const { svg, bindFunctions } = await mermaid.render(renderId, item.code);
+          item.el.innerHTML = svg;
+          if (bindFunctions) bindFunctions(item.el);
+        } catch (err) {
+          console.error('Mermaid render error for diagram', i, err);
+        }
+      }
+    }
+
+    // Initial render
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', renderDiagrams);
+    } else {
+      renderDiagrams();
+    }
+
+    // Expose for theme toggle button
+    window.renderDiagrams = renderDiagrams;
   </script>
-  ```
-- **Styling Requirements:**
-  - Responsive container: `max-w-4xl mx-auto px-6 py-10`.
-  - Clean typography and palette (e.g. `bg-slate-50 text-slate-800` with dark-friendly options).
-  - Component cards with soft borders (`bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-8`).
-  - Styled callouts with clear colored borders and badges for `Tip` and `Sharp Edge`.
-  - Dark-styled code blocks (`bg-slate-900 text-slate-100 p-4 rounded-lg font-mono text-sm overflow-x-auto`).
-  - Pre-rendered or containerized `<div class="mermaid">` blocks ready for Mermaid.js to hydrate.
-  - Standalone: zero external local dependencies, instantly readable offline or when opened directly in a browser (`file://`).
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 antialiased font-sans transition-colors duration-200">
+
+  <!-- Main Container -->
+  <div class="max-w-4xl mx-auto px-6 py-12">
+
+    <!-- Header with Theme Toggle -->
+    <header class="border-b border-slate-200 dark:border-slate-800 pb-8 mb-10 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300 mb-3 border border-teal-200 dark:border-teal-800">
+          Quick-Learn Architecture Guide
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-3">
+          [Topic Title]
+        </h1>
+        <p class="text-base sm:text-lg text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl">
+          [1-line context describing what system/repo/protocol this covers].
+        </p>
+      </div>
+
+      <!-- Light / Dark Toggle Button -->
+      <button onclick="toggleTheme()" type="button" aria-label="Toggle Theme" class="flex-none inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium transition-colors shadow-sm cursor-pointer self-start">
+        <!-- Sun icon (shown in dark mode) -->
+        <svg class="hidden dark:block w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9h-1m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <!-- Moon icon (shown in light mode) -->
+        <svg class="block dark:hidden w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+        <span class="dark:text-slate-200">Theme</span>
+      </button>
+    </header>
+
+    <!-- SECTION 1: The 10-Second Anchor -->
+    <section class="mb-10">
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+        <h2 class="text-xs font-bold text-teal-600 dark:text-teal-400 tracking-wider uppercase mb-2">1. The 10-Second Anchor</h2>
+        <div class="text-xl font-medium text-slate-900 dark:text-white leading-snug mb-3">
+          [1–2 plain-English sentences defining what the thing is without buzzwords or analogies.]
+        </div>
+        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+          <strong>Category &amp; Core Job:</strong> [e.g. Wire protocol / Local daemon] that [single problem solved].
+        </p>
+      </div>
+    </section>
+
+    <!-- SECTION 2: The Conceptual Ladder -->
+    <section class="mb-10">
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+        <h2 class="text-xs font-bold text-teal-600 dark:text-teal-400 tracking-wider uppercase mb-4">2. The Conceptual Ladder</h2>
+        <div class="space-y-4">
+          <!-- Repeat ladder steps 1 through 5 -->
+          <div class="flex items-start gap-3">
+            <span class="flex-none w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold flex items-center justify-center border border-slate-300 dark:border-slate-700">1</span>
+            <div>
+              <p class="text-sm font-semibold text-slate-900 dark:text-white">[Baseline: Known Reality]</p>
+              <p class="text-xs text-slate-600 dark:text-slate-400">[Description]</p>
+            </div>
+          </div>
+          <!-- More steps... -->
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: Visual Architecture & Boundary Map -->
+    <section class="mb-10">
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+        <h2 class="text-xs font-bold text-teal-600 dark:text-teal-400 tracking-wider uppercase mb-1">3. Visual Architecture &amp; Boundary Map</h2>
+        <p class="text-xs italic text-slate-500 dark:text-slate-400 mb-6">
+          <strong>Anchor Analogy:</strong> [1-sentence physical anchor].
+        </p>
+
+        <!-- Mermaid Diagram Container -->
+        <div class="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-4 mb-6 overflow-x-auto">
+          <div class="mermaid">
+            <!-- Mermaid diagram code -->
+          </div>
+        </div>
+
+        <!-- Division of Labor Table -->
+        <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide mb-3">Division of Labor</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300">
+                <th class="py-2.5 px-3 font-semibold">Component / Layer</th>
+                <th class="py-2.5 px-3 font-semibold">What It Owns</th>
+                <th class="py-2.5 px-3 font-semibold">What It Does NOT Touch</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-600 dark:text-slate-400">
+              <tr>
+                <td class="py-2.5 px-3 font-mono font-medium text-slate-900 dark:text-slate-200">[Component]</td>
+                <td class="py-2.5 px-3">[Owns]</td>
+                <td class="py-2.5 px-3">[Does not touch]</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: The Cast of Characters -->
+    <section class="mb-10">
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+        <h2 class="text-xs font-bold text-teal-600 dark:text-teal-400 tracking-wider uppercase mb-4">4. The Cast of Characters</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Card per character -->
+          <div class="border border-slate-200 dark:border-slate-800 rounded-lg p-4 bg-slate-50/50 dark:bg-slate-800/40">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">1. [Layer]</span>
+              <span class="text-xs font-mono bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded text-slate-700 dark:text-slate-300">[File/Location]</span>
+            </div>
+            <h3 class="font-bold text-slate-900 dark:text-white text-sm mb-1">[Name]</h3>
+            <p class="text-xs text-slate-600 dark:text-slate-400 mb-2">[Job description]</p>
+            <ul class="text-xs text-slate-500 dark:text-slate-400 space-y-1 list-disc list-inside">
+              <li><strong>Owns:</strong> [Responsibility]</li>
+              <li><strong>Interface:</strong> [Contract]</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: The Lifecycle Walkthrough -->
+    <section class="mb-10">
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+        <h2 class="text-xs font-bold text-teal-600 dark:text-teal-400 tracking-wider uppercase mb-1">5. The Lifecycle Walkthrough</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mb-6">[Description of single realistic scenario]</p>
+
+        <!-- Sequence Diagram -->
+        <div class="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-4 mb-6 overflow-x-auto">
+          <div class="mermaid">
+            <!-- Mermaid sequence diagram -->
+          </div>
+        </div>
+
+        <ol class="text-xs text-slate-600 dark:text-slate-400 space-y-2.5 list-decimal list-inside">
+          <li><strong>Step 1:</strong> [Description]</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- SECTION 6: The 60-Second Hands-On Spark -->
+    <section class="mb-10">
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+        <h2 class="text-xs font-bold text-teal-600 dark:text-teal-400 tracking-wider uppercase mb-1">6. The 60-Second Hands-On Spark</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">[How to poke or test it directly]</p>
+        <div class="bg-slate-900 text-slate-100 rounded-lg p-4 font-mono text-xs overflow-x-auto">
+          <!-- Minimal code/cli/curl command -->
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 7: The Field Guide & Gotchas -->
+    <section class="mb-10">
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+        <h2 class="text-xs font-bold text-teal-600 dark:text-teal-400 tracking-wider uppercase mb-4">7. Field Guide &amp; Sharp Edges</h2>
+
+        <!-- Sharp Edge Box -->
+        <div class="mb-4 rounded-lg border-l-4 border-amber-500 bg-amber-50 dark:bg-amber-950/30 p-4">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">⚠️ Sharp Edge: [Title]</span>
+          </div>
+          <p class="text-xs text-amber-900 dark:text-amber-200 leading-relaxed">[Gotcha explanation]</p>
+        </div>
+
+        <!-- Tip Box -->
+        <div class="rounded-lg border-l-4 border-teal-500 bg-teal-50 dark:bg-teal-950/30 p-4 mb-6">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-bold uppercase tracking-wider text-teal-800 dark:text-teal-300">💡 Tip / Blueprint: [Title]</span>
+          </div>
+          <p class="text-xs text-teal-900 dark:text-teal-200 leading-relaxed">[Tip explanation]</p>
+        </div>
+
+        <!-- Coordinates -->
+        <div class="border-t border-slate-200 dark:border-slate-800 pt-4">
+          <h3 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Deep-Dive Coordinates</h3>
+          <ul class="text-xs text-slate-600 dark:text-slate-400 space-y-1 font-mono">
+            <li>[File:line — Topic]</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="text-center text-xs text-slate-400 dark:text-slate-600 py-6">
+      Generated via Quick-Learn &bull; Self-contained &bull; Works offline with zero local server dependencies
+    </footer>
+
+  </div>
+
+</body>
+</html>
+```
