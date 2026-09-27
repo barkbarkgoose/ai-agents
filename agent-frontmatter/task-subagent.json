@@ -3,7 +3,7 @@
     "name": "task-subagent",
     "description": "Implementation subagent for scoped edits delegated by task-orchestrator. Uses a small local model and reports key logic/decisions back for review.",
     "mode": "subagent",
-    "model": "minimax-coding-plan/MiniMax-M3"
+    "model": "openai/gpt-5.6-luna"
   },
   "harnesses": {
     "opencode": {},

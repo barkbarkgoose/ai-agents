@@ -14,6 +14,8 @@
 
 set -e  # Exit on error
 
+trap 'status=$?; echo "ERROR: Sync failed at line $LINENO (exit $status). Destinations may be only partially synchronized." >&2; exit "$status"' ERR
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Destination roots. Kilo reads ~/.kilo/ as its XDG global root; stock OpenCode
