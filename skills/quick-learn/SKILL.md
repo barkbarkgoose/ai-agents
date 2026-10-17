@@ -140,18 +140,27 @@ Use this exact boilerplate structure for HTML output, ensuring all cards, text, 
 
   <!-- Mermaid.js CDN with Dynamic Theme Switching -->
   <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.9.3/dist/mermaid.esm.min.mjs';
 
-    // Capture raw diagram source before rendering
-    const diagramElements = Array.from(document.querySelectorAll('.mermaid')).map((el, i) => {
-      return {
-        el,
-        code: el.textContent.trim(),
-        baseId: `mermaid-diagram-${i}`
-      };
-    });
+    // Collect diagrams only after the body has been parsed. Keeping the raw
+    // source lets theme toggling re-render the same diagrams later.
+    let diagramElements = null;
+
+    function collectDiagramElements() {
+      return Array.from(document.querySelectorAll('.mermaid')).map((el, i) => {
+        return {
+          el,
+          code: el.textContent.trim(),
+          baseId: `mermaid-diagram-${i}`
+        };
+      });
+    }
 
     async function renderDiagrams() {
+      if (!diagramElements) {
+        diagramElements = collectDiagramElements();
+      }
+
       const isDark = document.documentElement.classList.contains('dark');
       mermaid.initialize({
         startOnLoad: false,
@@ -379,3 +388,27 @@ Use this exact boilerplate structure for HTML output, ensuring all cards, text, 
 </body>
 </html>
 ```
+
+#### Mermaid Validation (Required)
+
+Mermaid syntax errors can leave an otherwise valid HTML file with missing diagrams. After writing the final HTML file, validate the diagrams extracted from that actual file before reporting completion:
+
+```bash
+bash /Users/jake/dev/common/ai-agents/skills/quick-learn/scripts/validate_mermaid_html.sh /path/to/generated-guide.html
+```
+
+The validator parses the final HTML, extracts every `.mermaid` element, and checks each diagram with the same pinned Mermaid version used by the template (`10.9.3`). It exits nonzero and reports the diagram number and parser error if any diagram fails. Fix the source and rerun the validator until it passes. An empty or placeholder Mermaid block is also a failure.
+
+Keep the Mermaid CDN version and validator version aligned. The validator checks Mermaid syntax; when browser automation is available, also open the generated file and confirm that each `.mermaid` element contains an `<svg>` and that no Mermaid render errors appear in the console.
+
+#### Design Customization
+
+Treat the boilerplate as the required **functional baseline**, not a visual ceiling. Keep its light/dark behavior, persisted theme preference, responsive layout, Mermaid theme re-rendering, and accessible theme toggle intact. Then adapt the presentation to the subject so guides do not all look interchangeable.
+
+- Establish a deliberate visual identity that fits the material: for example, a systems guide may use a restrained technical-console feel, while an algorithm walkthrough can use strong step markers, color-coded data-flow stages, and monospace trace cards.
+- Improve scanability when it helps learning: a compact table of contents, sticky desktop navigation, section progress, grouped callouts, or clearly separated trace stages are all appropriate additions.
+- Add a small interactive sandbox only when it directly reinforces the concept, such as an S-box row/column lookup, a parser input, or a request trace. Keep it optional, dependency-free, and usable on mobile.
+- Preserve the guide's content structure and avoid decoration that competes with the conceptual ladder, diagrams, or concrete trace. The reader should see the learning path before the visual flourishes.
+- Maintain contrast, visible keyboard focus, readable line lengths, and mobile behavior. Use Tailwind utilities or a small embedded stylesheet when the template needs a subject-specific component that utilities alone do not express clearly.
+
+> 💡 **Design test:** If the same theme could be dropped unchanged onto any unrelated guide, add one or two subject-driven visual or interactive cues. If a visual element does not help comprehension or navigation, remove it.
