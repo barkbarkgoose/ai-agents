@@ -1,0 +1,325 @@
+<!doctype html>
+<!--
+  quick-learn shell: shared by every mode (LEARN, EXPLAIN, PLAN, MARKDOWN).
+  Copy it, replace every {{PLACEHOLDER}}, fill <main> with sections built from
+  references/blocks.html (the mode file says which), then delete this comment.
+
+  DO NOT REMOVE, in any mode:
+    1. The Tailwind CDN script and the darkMode: 'class' config
+    2. The head script (accent + theme resolved before first paint, so no flash)
+    3. #themeBtn and the theme script at the bottom
+    4. The <style> block and the behaviours script. Parts a page doesn't use are
+       inert (they only act on matching data-* markup), so leave them in.
+
+  {{ACCENT}}    teal (LEARN default) | emerald (EXPLAIN / PLAN default) | sky | violet | amber | rose.
+                It becomes Tailwind's `brand-*` colours and the --brand-* CSS variables. Use
+                brand-* for the accent everywhere; keep emerald/rose/amber/sky for meaning only.
+  {{DOC_SLUG}}  unique kebab-case id. Namespaces this page's saved theme and checklist state.
+
+  TYPOGRAPHY PLUGIN (prose-heavy MARKDOWN docs only): change the CDN src to
+    https://cdn.tailwindcss.com?plugins=typography
+  and use the Prose wrapper block.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{DOC_TITLE}}</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  (function () {
+    // Accent: one name picks the whole scale.
+    var PALETTES = {
+      teal:    { 50:'#f0fdfa',100:'#ccfbf1',200:'#99f6e4',300:'#5eead4',400:'#2dd4bf',500:'#14b8a6',600:'#0d9488',700:'#0f766e',800:'#115e59',900:'#134e4a',950:'#042f2e' },
+      emerald: { 50:'#ecfdf5',100:'#d1fae5',200:'#a7f3d0',300:'#6ee7b7',400:'#34d399',500:'#10b981',600:'#059669',700:'#047857',800:'#065f46',900:'#064e3b',950:'#022c22' },
+      sky:     { 50:'#f0f9ff',100:'#e0f2fe',200:'#bae6fd',300:'#7dd3fc',400:'#38bdf8',500:'#0ea5e9',600:'#0284c7',700:'#0369a1',800:'#075985',900:'#0c4a6e',950:'#082f49' },
+      violet:  { 50:'#f5f3ff',100:'#ede9fe',200:'#ddd6fe',300:'#c4b5fd',400:'#a78bfa',500:'#8b5cf6',600:'#7c3aed',700:'#6d28d9',800:'#5b21b6',900:'#4c1d95',950:'#2e1065' },
+      amber:   { 50:'#fffbeb',100:'#fef3c7',200:'#fde68a',300:'#fcd34d',400:'#fbbf24',500:'#f59e0b',600:'#d97706',700:'#b45309',800:'#92400e',900:'#78350f',950:'#451a03' },
+      rose:    { 50:'#fff1f2',100:'#ffe4e6',200:'#fecdd3',300:'#fda4af',400:'#fb7185',500:'#f43f5e',600:'#e11d48',700:'#be123c',800:'#9f1239',900:'#881337',950:'#4c0519' }
+    };
+    var brand = PALETTES['{{ACCENT}}'] || PALETTES.teal;
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: {
+        colors: { brand: brand },
+        fontFamily: { mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'] }
+      } }
+    };
+    var root = document.documentElement;
+    Object.keys(brand).forEach(function (k) { root.style.setProperty('--brand-' + k, brand[k]); });
+
+    // Theme before first paint: this page's saved choice, else the OS setting.
+    var osDark = window.matchMedia('(prefers-color-scheme: dark)').matches, saved = null;
+    try { saved = localStorage.getItem('ql-theme:{{DOC_SLUG}}'); } catch (e) {}
+    root.classList.toggle('dark', saved ? saved === 'dark' : osDark);
+  })();
+</script>
+
+<style>
+  html { scroll-behavior: smooth; }
+  ::selection { background: color-mix(in srgb, var(--brand-400) 35%, transparent); }
+  [id] { scroll-margin-top: 4.5rem; }  /* anchors don't land under the sticky header */
+
+  /* Faint graph paper: nice behind a hero, noisy anywhere else. */
+  .grid-bg {
+    background-image:
+      linear-gradient(to right, rgba(127,127,127,.12) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(127,127,127,.12) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  /* ── Flow diagrams (references/components.md): the main path runs down the left, side
+     connections hang off to the right. Plain CSS, so they follow the theme with no re-render.
+     Restyle through these variables, not by rewriting the rules. ── */
+  :root {
+    --flow-ink: #0f172a; --flow-muted: #475569; --flow-line: #64748b; --flow-accent: var(--brand-600);
+    --flow-node: #ffffff; --flow-side: #cbd5e1; --flow-ok: #047857;
+    --flow-note: var(--brand-50); --flow-note-line: var(--brand-500); --flow-warn: #fffbeb; --flow-warn-line: #f59e0b;
+    --flow-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .dark {
+    --flow-ink: #e2e8f0; --flow-muted: #94a3b8; --flow-line: #94a3b8; --flow-accent: var(--brand-400);
+    --flow-node: #0f172a; --flow-side: #334155; --flow-ok: #6ee7b7;
+    --flow-note: color-mix(in srgb, var(--brand-950) 60%, transparent); --flow-warn: rgb(69 26 3 / 0.5);
+  }
+  .flow { --spine: 220px; display: flex; flex-direction: column; min-width: 0; font-size: 15px; color: var(--flow-ink); }
+  .flow.stages { --spine: 300px; }
+  .flow-row { display: grid; grid-template-columns: var(--spine) minmax(0, 1fr); align-items: center; }
+  .flow .node { border: 1.5px solid var(--flow-accent); background: var(--flow-node); border-radius: 8px;
+    padding: 9px 12px; font-weight: 600; text-align: center; line-height: 1.35; }
+  .flow .node small { display: block; font-family: var(--flow-mono); font-size: 12px; font-weight: 400;
+    color: var(--flow-muted); overflow-wrap: break-word; }
+  .flow .node.db { border-radius: 50% / 16px; padding-block: 14px; }
+  .flow .node.side { border-color: var(--flow-side); text-align: left; }
+  .flow .node.helper { border-style: dashed; }
+  .flow .node.result { font-family: var(--flow-mono); font-weight: 500; font-size: 13.5px; border-color: var(--flow-ok); color: var(--flow-ok); }
+  .flow .node.stage { text-align: left; }
+  .flow .stage-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
+  .flow .stage-head .num { display: inline-grid; place-items: center; flex: 0 0 auto; width: 22px; height: 22px;
+    border-radius: 50%; background: var(--flow-accent); color: var(--flow-node); font-size: 12px; }
+  .flow .stage-head small { display: inline; }
+  .flow .node.stage ul { margin: 6px 0 0; padding-left: 30px; list-style: disc; font-weight: 400; font-size: 14px; }
+  .flow .node.stage .cmd { display: block; margin: 6px 0 0 30px; font-family: var(--flow-mono); font-weight: 400; font-size: 13px; }
+  .flow-down { position: relative; width: var(--spine); min-height: 34px; display: flex; align-items: center;
+    padding: 6px 0 6px calc(var(--spine) / 2 + 12px); color: var(--flow-muted); font-family: var(--flow-mono); font-size: 12.5px; }
+  .flow-down::before { content: ""; position: absolute; left: calc(var(--spine) / 2 - 1px); top: 0; bottom: 6px; border-left: 2px solid var(--flow-line); }
+  .flow-down::after { content: ""; position: absolute; left: calc(var(--spine) / 2 - 6px); bottom: 0;
+    border: 6px solid transparent; border-top: 7px solid var(--flow-line); border-bottom: 0; }
+  .flow-down span { white-space: nowrap; }
+  .flow-side { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .flow-side li { display: flex; align-items: center; min-width: 0; }
+  .flow-side .node.side { flex: 0 1 auto; min-width: 0; }
+  .edge { position: relative; flex: 0 0 auto; min-width: 140px; padding: 0 14px 14px; color: var(--flow-muted);
+    font-family: var(--flow-mono); font-size: 12px; white-space: nowrap; text-align: center; }
+  .edge::before { content: ""; position: absolute; left: 0; right: 7px; bottom: 5px; border-top: 2px solid var(--flow-line); }
+  .edge::after { content: ""; position: absolute; right: 0; bottom: 0; border: 6px solid transparent; border-left: 7px solid var(--flow-line); border-right: 0; }
+  .edge.in::before { left: 7px; right: 0; border-top-style: dashed; }
+  .edge.in::after { left: 0; right: auto; border-left: 0; border-right: 7px solid var(--flow-line); }
+  .flow-note { margin-left: 18px; padding: 8px 12px; border-left: 3px solid var(--flow-note-line); background: var(--flow-note);
+    border-radius: 0 8px 8px 0; font-size: 13.5px; max-width: 34ch; }
+  .flow-note.warn { border-left-color: var(--flow-warn-line); background: var(--flow-warn); }
+  @media (max-width: 620px) {
+    .flow { --spine: 180px; }
+    .flow.stages { --spine: 100%; }
+    .flow-row { grid-template-columns: minmax(0, 1fr); row-gap: 8px; }
+    .flow-row > .node { width: var(--spine); }
+    .flow-side { padding-left: 16px; }
+    .flow-side .node.side { flex: 1 1 0; }
+    .edge { flex: 0 0 66px; min-width: 0; padding-inline: 6px; font-size: 11.5px; white-space: normal; }
+    .flow-down span { white-space: normal; }
+    .flow-note { margin-left: 16px; max-width: none; }
+  }
+
+  /* ── Interactive pieces (references/components.md): linked highlights and steppers
+     ([data-explore]), self-check cards ([data-quiz]), predict-then-see reveals. ── */
+  :root { --hl-bg: #fcd34d; --hl-ink: #78350f; --hl-line: #f59e0b; --chg: #b45309; }
+  .dark { --hl-bg: #fbbf24; --hl-ink: #451a03; --hl-line: #fbbf24; --chg: #fbbf24; }
+  [data-id].is-lit { background: var(--hl-bg); color: var(--hl-ink); border-radius: 3px; }
+  [data-id].is-lit * { color: inherit; }
+  .flow .node[data-id].is-lit { background: var(--flow-node); color: var(--flow-ink); outline: 3px solid var(--hl-line); outline-offset: 2px; }
+  .flow .node[data-id].is-lit small { color: var(--flow-muted); }
+  [data-show] { cursor: pointer; }
+  [data-show]:focus-visible, [data-step]:focus-visible, [data-quiz] button:focus-visible,
+  details.reveal > summary:focus-visible, #themeBtn:focus-visible {
+    outline: 2px solid var(--flow-accent); outline-offset: 2px; }
+  [data-show].is-picked { border-color: var(--flow-accent); box-shadow: inset 0 0 0 1px var(--flow-accent); }
+  [data-step]:disabled { opacity: 0.4; cursor: default; }
+  .explore-note:empty { display: none; }
+  .chg { font-weight: 700; color: var(--chg); }  /* what changed, in a before/after pair */
+  details.reveal > summary { cursor: pointer; width: fit-content; }
+  [data-quiz] button.is-right { border-color: #86efac; background: #f0fdf4; color: #166534; }
+  [data-quiz] button.is-wrong { border-color: #fca5a5; background: #fef2f2; color: #991b1b; }
+  .dark [data-quiz] button.is-right { border-color: #15803d; background: rgb(20 83 45 / 0.4); color: #bbf7d0; }
+  .dark [data-quiz] button.is-wrong { border-color: #b91c1c; background: rgb(127 29 29 / 0.4); color: #fecaca; }
+  [data-quiz] button.is-out { opacity: 0.55; }
+  [data-quiz][data-answered] button { cursor: default; }
+
+  /* ── Print: light theme (the script swaps it), no chrome, keep diagrams and tables whole. ── */
+  @media print {
+    header.site, #themeBtn, [data-step], [data-step-label] { display: none !important; }
+    .grid-bg { background-image: none; }
+    .flow, table, pre, [data-quiz], .break-avoid { break-inside: avoid; }
+  }
+</style>
+</head>
+
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-200 antialiased font-sans">
+
+<!-- ══ HEADER: brand, optional nav, theme toggle ══
+     Nav only for ~4–8 sections. Under ~4: delete the <nav>. Over ~8: delete it and use the
+     TOC sidebar block. Every href="#x" needs a matching id="x". -->
+<header class="site sticky top-0 z-50 backdrop-blur bg-slate-50/80 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-4">
+    <span class="font-semibold tracking-tight truncate min-w-0">
+      {{BRAND}} <span class="text-brand-600 dark:text-brand-400">/ {{BRAND_SUFFIX}}</span>
+    </span>
+    <nav class="hidden md:flex gap-5 text-sm text-slate-500 dark:text-slate-400 ml-4">
+      <a href="#{{ANCHOR_1}}" class="hover:text-brand-600 dark:hover:text-brand-400">{{NAV_1}}</a>
+      <a href="#{{ANCHOR_2}}" class="hover:text-brand-600 dark:hover:text-brand-400">{{NAV_2}}</a>
+      <a href="#{{ANCHOR_3}}" class="hover:text-brand-600 dark:hover:text-brand-400">{{NAV_3}}</a>
+    </nav>
+    <button id="themeBtn" type="button" aria-label="Dark theme" aria-pressed="false"
+            class="ml-auto flex-none inline-flex items-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+      <!-- sun (shown in dark mode) -->
+      <svg class="hidden dark:block w-4 h-4 text-amber-400" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+      </svg>
+      <!-- moon (shown in light mode) -->
+      <svg class="block dark:hidden w-4 h-4 text-slate-600" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+      </svg>
+      <span>Theme</span>
+    </button>
+  </div>
+</header>
+
+<!-- ══ HERO ══ -->
+<section class="grid-bg border-b border-slate-200 dark:border-slate-800">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12 md:py-20">
+    <p class="text-xs uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400 mb-4">{{KICKER}}</p>
+    <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.1] max-w-3xl text-slate-900 dark:text-white">
+      {{HEADLINE}}
+    </h1>
+    <p class="mt-5 text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
+      {{STANDFIRST}}
+    </p>
+    <!-- Optional: Stat row or Meta bar from references/blocks.html -->
+  </div>
+</section>
+
+<main class="max-w-5xl mx-auto px-4 sm:px-6">
+
+  <!-- ══ SECTION: repeat this shell; fill the body with blocks from references/blocks.html ══ -->
+  <section id="{{ANCHOR_1}}" class="py-12 border-b border-slate-200 dark:border-slate-800">
+    <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">{{SECTION_HEADING}}</h2>
+    <p class="text-slate-600 dark:text-slate-400 mb-8 max-w-2xl">{{SECTION_DECK}}</p>
+
+    {{SECTION_BODY}}
+  </section>
+
+  <!-- Last section: drop border-b so it doesn't double up with the footer rule. -->
+
+</main>
+
+<footer class="border-t border-slate-200 dark:border-slate-800">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8 text-sm text-slate-500 dark:text-slate-400 flex flex-wrap gap-2 justify-between">
+    <span>{{FOOTER_LEFT}}</span>
+    <span>{{FOOTER_RIGHT}}</span>
+  </div>
+</footer>
+
+<!-- Page-specific scripts that generate markup (e.g. long bit strings for an explorer) go here,
+     BEFORE the behaviours script, so the behaviours see the generated elements. -->
+
+<script>
+  // ── Theme toggle: saves the choice for this page; follows the OS until the reader picks. ──
+  (function () {
+    var root = document.documentElement, btn = document.getElementById('themeBtn');
+    var KEY = 'ql-theme:{{DOC_SLUG}}';
+    function paint() { btn.setAttribute('aria-pressed', String(root.classList.contains('dark'))); }
+    paint();
+    btn.addEventListener('click', function () {
+      root.classList.toggle('dark');
+      try { localStorage.setItem(KEY, root.classList.contains('dark') ? 'dark' : 'light'); } catch (e) {}
+      paint();
+    });
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+      try { if (localStorage.getItem(KEY)) return; } catch (err) {}
+      root.classList.toggle('dark', e.matches);
+      paint();
+    });
+    // Print in the light theme, then put the reader's theme back.
+    var wasDark = false;
+    window.addEventListener('beforeprint', function () { wasDark = root.classList.contains('dark'); root.classList.remove('dark'); });
+    window.addEventListener('afterprint', function () { root.classList.toggle('dark', wasDark); });
+  })();
+
+  // ── Linked highlights and steppers. In a [data-explore] box, picking an element with
+  // data-show="a b" (click, Enter or Space, or the box's prev/next buttons) highlights every
+  // [data-id] it names and shows its data-note in the box's [data-note-out]. The first one
+  // starts picked, so the box never opens empty. ──
+  document.querySelectorAll('[data-explore]').forEach(function (box) {
+    var picks = Array.prototype.slice.call(box.querySelectorAll('[data-show]'));
+    var note = box.querySelector('[data-note-out]');
+    var label = box.querySelector('[data-step-label]');
+    var prev = box.querySelector('[data-step="prev"]');
+    var next = box.querySelector('[data-step="next"]');
+    var current = 0;
+    function pick(i) {
+      current = Math.max(0, Math.min(picks.length - 1, i));
+      var ids = picks[current].dataset.show.split(/\s+/);
+      box.querySelectorAll('[data-id]').forEach(function (el) { el.classList.toggle('is-lit', ids.indexOf(el.dataset.id) !== -1); });
+      picks.forEach(function (el, j) {
+        el.classList.toggle('is-picked', j === current);
+        el.setAttribute('aria-pressed', String(j === current));
+      });
+      if (note) note.innerHTML = picks[current].dataset.note || '';
+      if (label) label.textContent = 'Step ' + (current + 1) + ' of ' + picks.length;
+      if (prev) prev.disabled = current === 0;
+      if (next) next.disabled = current === picks.length - 1;
+    }
+    picks.forEach(function (el, i) {
+      if (el.tagName !== 'BUTTON') { el.setAttribute('role', 'button'); el.tabIndex = 0; }
+      el.addEventListener('click', function () { pick(i); });
+      el.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); pick(i); }
+      });
+    });
+    if (prev) prev.addEventListener('click', function () { pick(current - 1); });
+    if (next) next.addEventListener('click', function () { pick(current + 1); });
+    if (picks.length) pick(0);
+  });
+
+  // ── Self-check cards: the first pick locks the card, marks the right answer (and a wrong
+  // pick), and shows the explanation. ──
+  document.querySelectorAll('[data-quiz]').forEach(function (card) {
+    var options = Array.prototype.slice.call(card.querySelectorAll('button[data-correct]'));
+    options.forEach(function (button) {
+      button.addEventListener('click', function () {
+        if (card.dataset.answered) return;
+        card.dataset.answered = 'true';
+        options.forEach(function (option) {
+          option.classList.add(option.dataset.correct === 'true' ? 'is-right' : option === button ? 'is-wrong' : 'is-out');
+        });
+        card.querySelector('[data-explain]').hidden = false;
+      });
+    });
+  });
+
+  // ── Checklists: ticked state persists per page and list. Markup's own `checked` (from a
+  // source `- [x]`) stands until the reader changes something. ──
+  document.querySelectorAll('[data-checklist]').forEach(function (list) {
+    var key = 'ql-check:{{DOC_SLUG}}:' + list.dataset.checklist, saved = [];
+    try { saved = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}
+    var boxes = Array.prototype.slice.call(list.querySelectorAll('input[type=checkbox]'));
+    boxes.forEach(function (box, i) {
+      if (saved.length) box.checked = !!saved[i];
+      box.addEventListener('change', function () {
+        try { localStorage.setItem(key, JSON.stringify(boxes.map(function (b) { return b.checked; }))); } catch (e) {}
+      });
+    });
+  });
+</script>
+</body>
+</html>
