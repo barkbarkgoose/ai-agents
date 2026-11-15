@@ -1,3 +1,5 @@
+**NOTE: 2026-11-15** -- likely will change to using canonical's multipass as a sandbox environment for agents, simpler and safer than anything else in this file...
+
 Alternative to running a sandbox with a docker container, here is how you could transition to a lighter-weight setup and what you would gain or lose compared to Docker.
 
 1. The "Python + Shell" Alternative Since the harness is primarily a collection of shell scripts, binaries (in seed/bin and seed/tools/bin), and configuration files, you could implement a "Local Native" version.

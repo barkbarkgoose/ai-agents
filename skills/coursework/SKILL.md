@@ -3,13 +3,13 @@ name: coursework
 description: >-
   Runs the user's university coursework workflow end-to-end from any directory: locates the
   per-machine study vault, the semester code workspace, and the `planner` assignment tracker
-  (documented defaults first, then `planner resources`, then ask); triages gaps and late work;
+  (via environment variables, `planner resources`, or asking the user); triages gaps and late work;
   answers "what are we working on next"; pulls an assignment's brief and rubric by ref; builds it
   in the correct repo; captures a real evidence run; and submits. Use whenever the user mentions
   coursework, a course code (CS 3540, CS 2900, …), the planner, an assignment / Forge / devlog /
   homework / Canvas submission, gaps, late work, or studying for a course.
-version: 1.0
-updated: 2026-11-08
+version: 1.1
+updated: 2026-11-15
 ---
 
 # Coursework
@@ -21,8 +21,8 @@ portable entry point: it says **where to look** on any machine, then hands off t
 files that must be read for the current term.
 
 > **Two hard rules that never change across machines or terms:**
-> 1. **Code and repos live under the workspace (`~/dev/uvu/...`); notes and trackers live in the
->    vault.** Never put a markdown note in the workspace, never put build output in the vault.
+> 1. **Code and repos live in the workspace; notes and trackers live in the vault.** Never put a
+>    markdown note in the workspace, never put build output in the vault.
 > 2. **Status is never inferred.** `done` / `missing` / `skipped` / `na` come only from Jake's
 >    words, never from a file existing, a commit landing, or Canvas. Pass `--confirm` only when he
 >    actually said it.
@@ -31,27 +31,23 @@ files that must be read for the current term.
 
 ## 0. Locate the environment (do this first, every session — never answer from memory)
 
-Resolve each path in the order below and **stop at the first hit**. The vault and `write_as_me`
-are registered per machine, so the registry is authoritative for those; the workspace and planner
-have conventional defaults.
+Resolve each path in the order below and **stop at the first hit**. Do not assume or hard-code
+machine-specific paths; rely on environment variables, `PATH`, and the per-machine `planner`
+registry (`~/.config/course-planner/config.json`).
 
-| Thing | Default (this machine) | Look-up order |
-|---|---|---|
-| `planner` CLI | `~/dev/uvu/course-planner/bin/planner` | `$PLANNER_BIN` → `command -v planner` → `~/dev/uvu/course-planner/bin/planner` |
-| **Vault** (notes + trackers) | `~/Gdrive/notebook/uvu/2026_fall` | `$PLANNER_VAULT` → `planner resources` key `vault` → `~/.config/course-planner/config.json` → `~/Gdrive/notebook/uvu/<term>` |
-| **Workspace** (code + repos) | `~/dev/uvu/2026-fall` | the workspace's own `AGENTS.md`/`CLAUDE.md` is authoritative; look for `~/dev/uvu/<term>` where `<term>` is e.g. `2026-fall` |
-| `write_as_me` (voice repo) | `~/dev/programs/write-as-me` | `planner resources` key `write_as_me` → default |
-| ai-agents (this repo) | `~/dev/common/ai-agents` | default |
-
-The term appears in two spellings: **vault uses `2026_fall` (underscore)**, **workspace uses
-`2026-fall` (hyphen)**. Don't assume they match.
+| Thing | Look-up order |
+|---|---|
+| `planner` CLI | `$PLANNER_BIN` → `command -v planner` → ask the user |
+| **Vault** (notes + trackers) | `$PLANNER_VAULT` → `planner resources` key `vault` → `~/.config/course-planner/config.json` (`vault`) → ask the user |
+| **Workspace** (code + repos) | `$PLANNER_WORKSPACE` → `planner resources` key `workspace` → `~/.config/course-planner/config.json` (`workspace`) → ask the user (once located, `<workspace>/AGENTS.md` or `CLAUDE.md` is authoritative) |
+| `write_as_me` (voice repo) | `planner resources` key `write_as_me` → `~/.config/course-planner/config.json` (`write_as_me`) → ask the user when needed |
 
 Resolve and verify with one shell pass:
 
 ```bash
-P="${PLANNER_BIN:-$(command -v planner || echo "$HOME/dev/uvu/course-planner/bin/planner")}"
+P="${PLANNER_BIN:-$(command -v planner)}"
 "$P" doctor        # setup check: vault, Canvas auth (required for sync), gh (if a course has a repo)
-"$P" resources     # prints the per-machine 'vault' and 'write_as_me' paths
+"$P" resources     # prints the per-machine registered paths (e.g. 'vault', 'write_as_me')
 ```
 
 **Then you MUST read the authoritative protocol files before doing course work** (they are the
@@ -64,20 +60,21 @@ source of truth and go stale faster than this skill):
 
 ### If a path can't be resolved → ask, then persist
 
-If the vault or workspace isn't found, **stop and ask, don't guess**. Ask one grouped question:
-_"Where is your study vault? Where is your semester workspace (the code dir)?"_ Once answered:
+If `planner`, the vault, or the workspace isn't found, **stop and ask, don't guess**. Ask one
+grouped question for any missing paths (e.g. _"Where is your study vault? Where is your semester
+workspace (the code dir)?"_). Once answered:
 
 - Persist the vault: `"$P" resources --set vault <path>` (the CLI writes `~/.config/course-planner/config.json`).
-- The workspace has no registry key yet — **suggest adding one** (`workspace`) to `RESOURCES` in
-  `course-planner/planner/vault.py`, then `planner resources --set workspace <path>`, so the next
-  agent finds it without asking.
+- Persist the workspace: `"$P" resources --set workspace <path>` (if `workspace` is not yet a
+  supported key in `RESOURCES` in `course-planner/planner/vault.py`, suggest adding it so the next
+  agent finds it without asking).
 
 ---
 
 ## 1. Every session starts with these
 
 ```bash
-P=~/dev/uvu/course-planner/bin/planner   # or the resolved path from §0
+# Using P resolved in §0:
 "$P" doctor               # vault, Canvas auth, gh
 "$P" next                 # gaps first, then confirmed late work, then upcoming
 "$P" grades <course>      # what the autograder said (issues via gh) — only for a course with a repo:
@@ -171,14 +168,14 @@ submit is **workspace** code. Keep them apart.
 
 ## 6. Path drift & self-healing (do this instead of failing silently)
 
-If a documented default is wrong — vault moved, workspace renamed, planner in a new spot, a course
-directory spelled differently — treat that as **skill rot to report, not a reason to give up**:
+If a registered path is stale or missing — vault moved, workspace renamed, planner in a new spot,
+or a course directory spelled differently — don't guess or fail silently:
 
 1. Re-run the §0 look-up ladder; try `"$P" doctor` and `"$P" resources`.
 2. Ask Jake only for the specific path you can't find.
 3. Persist it (`"$P" resources --set <key> <path>`) so the next session is silent.
-4. **Propose updating this skill**: fix the default in the §0 table (and bump `updated:` in the
-   frontmatter), or add the missing key to the planner's `RESOURCES`. State what changed and why.
+4. If a needed key is missing from `planner`'s `RESOURCES`, propose adding it so it can be
+   persisted per machine.
 5. If the workspace's `AGENTS.md` disagrees with this skill, **the workspace file wins** — this skill
    is the locator and the invariants, not the per-term record.
 
