@@ -1,0 +1,84 @@
+{
+  "query": {
+    "origin": "LAS",
+    "destination": "ASU",
+    "window": "may",
+    "year": 2027,
+    "min_days": 28,
+    "max_days": 42,
+    "budget_max": 1000.0,
+    "budget_target": 700.0
+  },
+  "visa_and_passport_guidance": "US citizens can enter Paraguay visa-free for up to 90 days. Passport must have 6 months validity.",
+  "recommended_itineraries": [
+    {
+      "option_label": "Option A (35 days / 5.0 weeks)",
+      "departure_date": "2027-05-04",
+      "return_date": "2027-06-08",
+      "departure_day_of_week": "Tuesday",
+      "return_day_of_week": "Tuesday",
+      "duration_days": 35,
+      "fare_estimate": {
+        "route": "LAS ⇄ ASU",
+        "dep_date": "2027-05-04",
+        "ret_date": "2027-06-08",
+        "days_of_week": "Tuesday -> Tuesday",
+        "dep_multiplier": 0.76,
+        "ret_multiplier": 0.9,
+        "dep_season_note": "May Low/Shoulder Season",
+        "ret_season_note": "Standard Season",
+        "base_airfare_range": [
+          382.95,
+          449.55
+        ],
+        "mandatory_taxes_and_fees": 183.0,
+        "stopover_tax": 0.0,
+        "checked_bag_cost": 0.0,
+        "total_estimated_range": [
+          565.95,
+          632.55
+        ],
+        "midpoint_estimate": 599.25
+      },
+      "fits_target_budget": true,
+      "fits_max_budget": true,
+      "deep_links": {
+        "google_flights": "https://www.google.com/travel/flights?q=Flights%20to%20ASU%20from%20LAS%20on%202027-05-04%20through%202027-06-08",
+        "kayak": "https://www.kayak.com/flights/LAS-ASU/2027-05-04/2027-06-08",
+        "skyscanner": "https://www.skyscanner.com/transport/flights/las/asu/"
+      },
+      "stopover_itinerary": {
+        "hub": "PTY",
+        "stopover_days": 1,
+        "stopover_end_date": "2027-05-05",
+        "estimated_fare_range": [
+          610.95,
+          677.55
+        ],
+        "midpoint_estimate": 644.25,
+        "google_multicity_url": "https://www.google.com/travel/flights?q=Flights%20from%20LAS%20to%20PTY%20on%202027-05-04%20and%20from%20PTY%20to%20ASU%20on%202027-05-05%20and%20from%20ASU%20to%20LAS%20on%202027-06-08",
+        "copa_stopover_url": "https://www.copaair.com/en-us/panama-stopover/"
+      },
+      "split_ticket_itinerary": {
+        "connection_hub": "MIA",
+        "domestic_airline": "Southwest / Frontier / Spirit / American",
+        "intl_airline": "Copa / Avianca / LATAM",
+        "domestic_estimated_range": [
+          134.9,
+          184.85
+        ],
+        "intl_estimated_range": [
+          396.1,
+          462.7
+        ],
+        "combined_total_range": [
+          531.0,
+          647.55
+        ],
+        "combined_midpoint": 589.28,
+        "google_domestic_url": "https://www.google.com/travel/flights?q=Flights%20to%20MIA%20from%20LAS%20on%202027-05-04%20through%202027-06-08",
+        "google_intl_url": "https://www.google.com/travel/flights?q=Flights%20to%20ASU%20from%20MIA%20on%202027-05-04%20through%202027-06-08"
+      }
+    }
+  ]
+}

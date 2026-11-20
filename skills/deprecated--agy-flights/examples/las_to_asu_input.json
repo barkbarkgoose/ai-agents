@@ -1,0 +1,15 @@
+{
+  "origin": "LAS",
+  "destination": "ASU",
+  "window": "may",
+  "after_day": 1,
+  "min_days": 28,
+  "max_days": 42,
+  "max_stay_days": 90,
+  "budget_max": 1000.0,
+  "budget_target": 700.0,
+  "stopover_hub": "PTY",
+  "stopover_days": 1,
+  "split_hub": "MIA",
+  "year": 2027
+}

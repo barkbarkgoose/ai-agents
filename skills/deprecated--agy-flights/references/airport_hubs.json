@@ -1,0 +1,46 @@
+{
+  "airports": {
+    "LAS": {
+      "name": "Harry Reid International Airport",
+      "city": "Las Vegas",
+      "country": "USA",
+      "timezone": "America/Los_Angeles",
+      "primary_routes_to_south_america": ["LAS-PTY (Copa)", "LAS-MIA/FLL (Domestic connect)", "LAS-IAH (United)", "LAS-DFW (American)"]
+    },
+    "ASU": {
+      "name": "Silvio Pettirossi International Airport",
+      "city": "Asunción",
+      "country": "Paraguay",
+      "timezone": "America/Asuncion",
+      "visa_rules_us_citizens": "Visa-free for up to 90 days. Must have valid passport with at least 6 months validity. Yellow fever certificate required only if arriving from endemic zones.",
+      "climate": {
+        "december_january": "Mid-summer. Hot & humid (34-40C / 93-104F). Frequent afternoon thunderstorms. AC essential.",
+        "may_june": "Late autumn/early winter. Mild and pleasant (23-26C / 73-79F daytime, 14-16C / 57-61F night). Low humidity. Best time of year to visit."
+      },
+      "direct_international_connections": ["PTY (Copa)", "GRU (LATAM/Gol)", "EZE/AEP (Aerolineas Argentinas/Paranair)", "BOG (Avianca)", "LIM (LATAM)", "MVD (Paranair)"]
+    },
+    "PTY": {
+      "name": "Tocumen International Airport",
+      "city": "Panama City",
+      "country": "Panama",
+      "role": "Hub of the Americas (Copa Airlines)",
+      "transit_type": "Sterile international transit. No transit visa required for US passport holders. Baggage auto-transfers on single ticket.",
+      "has_free_stopover": true,
+      "stopover_program": "Panama Stopover (Copa)"
+    },
+    "MIA": {
+      "name": "Miami International Airport",
+      "city": "Miami",
+      "country": "USA",
+      "role": "Primary US Gateway to Latin America",
+      "transit_type": "Domestic-to-International positioning hub. High flight frequency to South America. Excellent for split-ticketing."
+    },
+    "BOG": {
+      "name": "El Dorado International Airport",
+      "city": "Bogota",
+      "country": "Colombia",
+      "role": "Avianca Main Hub",
+      "transit_type": "International connection point."
+    }
+  }
+}

@@ -1,4 +1,0 @@
-openai
-openai-agents
-pyyaml
-python-dotenv

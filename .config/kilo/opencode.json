@@ -1,0 +1,47 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "llamacpp": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "llama.cpp (local)",
+      "options": {
+        "baseURL": "http://127.0.0.1:8089/v1",
+        "apiKey": "local"
+      },
+      "models": {
+        "nemotron-3-nano-30b.gguf": {
+          "name": "Nemotron 30B (local)",
+          "tool_call": true,
+          "defaultParameters": {
+            "max_tokens": 30000,
+            "temperature": 0.7
+          }
+        },
+        "qwen3-4b-thinking.gguf": {
+          "name": "qwen3-4b-thinking (local)",
+          "tool_call": true,
+          "defaultParameters": {
+            "max_tokens": 30000,
+            "temperature": 0.7
+          }
+        },
+        "qwen3-30b-thinking.gguf": {
+          "name": "qwen3-30b-thinking (local)",
+          "tool_call": true,
+          "defaultParameters": {
+            "max_tokens": 30000,
+            "temperature": 0.7
+          }
+        },
+        "qwen3.5-35b.gguf": {
+          "name": "qwen3.5-35b (local)",
+          "tool_call": true,
+          "defaultParameters": {
+            "max_tokens": 30000,
+            "temperature": 0.7
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+# --- agent tasks ---
+# ignore the whole directory (anchored at repo root)
+/.agent-tasks/**
+
+# --- unignore archive ---
+# allow Git to traverse into .agent-tasks and archive
+!/.agent-tasks/
+!/.agent-tasks/archive/
+!/.agent-tasks/archive/**
+
+# --- unignore any research folder under tasks/*/research ---
+# allow traversal down to research
+!/.agent-tasks/tasks/
+!/.agent-tasks/tasks/*/
+!/.agent-tasks/tasks/*/research/
+!/.agent-tasks/tasks/*/research/**

@@ -1,0 +1,21 @@
+{
+  "defaults": {
+    "name": "small-subagent",
+    "description": "Implementation subagent for scoped edits delegated by small-model-orchestrator. Uses a small local model and reports key logic/decisions back for review.",
+    "mode": "subagent",
+    "model": "google/gemma-4-31b-it"
+  },
+  "harnesses": {
+    "opencode": {},
+    "claude": {
+      "mode": null,
+      "model": "haiku",
+      "tools": "Read, Write, Edit, Grep, Glob, Bash",
+      "color": "orange"
+    },
+    "gemini": {
+      "mode": null,
+      "model": null
+    }
+  }
+}

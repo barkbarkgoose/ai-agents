@@ -1,1 +1,0 @@
-run the [multi agent orchestrator](../agents/multi-agent-orchestrator.md) with user input
