@@ -1,0 +1,49 @@
+# llmmux default environment
+#
+# Loaded from the llmmux repo. User overrides go in ~/.llmmux/.env
+# (which is loaded on top of this file).
+#
+# -----------------------------------------------------------------------------
+# Provider -> pi model mappings
+# -----------------------------------------------------------------------------
+#
+# Shortcuts resolve to `pi --model <value>` via the LLMMUX_PI_MODEL_<NAME>
+# env var. Override any shortcut here, or in ~/.llmmux/.env. A shortcut with
+# no mapping falls through as a raw pi model string.
+#
+#   llmmux chat foo --provider gemini-flash
+#     -> pi --model gemini-3.5-flash
+#
+#   llmmux chat foo --provider anthropic/claude-sonnet-4-5
+#     -> pi --model anthropic/claude-sonnet-4-5  (passthrough)
+
+LLMMUX_PI_MODEL_GEMINI=google/gemini-2.5-pro
+LLMMUX_PI_MODEL_GEMINI_FLASH=google/gemini-2.5-flash
+LLMMUX_PI_MODEL_GEMINI_PRO=google/gemini-2.5-pro
+LLMMUX_PI_MODEL_CLAUDE=anthropic/claude-sonnet-4-5
+LLMMUX_PI_MODEL_SONNET=anthropic/claude-sonnet-4-5
+LLMMUX_PI_MODEL_OPUS=anthropic/claude-opus-4-1
+LLMMUX_PI_MODEL_GPT=openai-codex/gpt-5.5
+LLMMUX_PI_MODEL_CODEX=openai-codex/gpt-5.4
+LLMMUX_PI_MODEL_MINIMAX=minimax/MiniMax-M2.7
+
+# -----------------------------------------------------------------------------
+# Defaults
+# -----------------------------------------------------------------------------
+
+# Provider shortcut used when --provider is omitted on `llmmux chat`.
+LLMMUX_DEFAULT_PROVIDER=gemini-flash
+
+# Agent CLI template. Two %s placeholders: model, then prompt (or empty).
+# Override these to swap out `pi` for any other local-agent CLI that takes
+# a model flag and an optional initial prompt.
+#
+#   LLMMUX_AGENT_CMD='claude --model %s %s'
+#   LLMMUX_AGENT_CMD_ONESHOT='claude --model %s -p %s'
+#
+LLMMUX_AGENT_CMD='pi --model %s %s'
+LLMMUX_AGENT_CMD_ONESHOT='pi --model %s -p %s'
+
+# Where llmmux keeps its home dir (default ~/.llmmux).
+# Override here only if you want a non-default location.
+# LLMMUX_HOME=~/.llmmux

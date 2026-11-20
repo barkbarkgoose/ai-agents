@@ -1,4 +1,4 @@
-# tmux Cheatsheet for Agent Development
+# tmux Cheatsheet
 
 All commands start with the **prefix**: `Ctrl+b`
 
@@ -20,7 +20,7 @@ All commands start with the **prefix**: `Ctrl+b`
 ```bash
 tmux new -s mysession           # create and attach
 tmux new -d -s mysession        # create detached
-tmux attach -t mysession        # attach to existing (can open a new tab, attach to existing session, pull up window for specific agent)
+tmux attach -t mysession        # attach to existing
 tmux ls                         # list all sessions
 tmux kill-session -t mysession  # kill session
 ```
@@ -41,6 +41,11 @@ tmux kill-session -t mysession  # kill session
 | Move window to session | `Ctrl+b` `:` `move-window -t session` |
 | Link window to session | `Ctrl+b` `:` `link-window -t session` |
 
+**Switching by name** (handy when you name windows after their agent):
+```
+Ctrl+b '          # then type the window name and Enter
+```
+
 ---
 
 ## Panes (splits within a window)
@@ -57,8 +62,6 @@ tmux kill-session -t mysession  # kill session
 | Resize pane | `Ctrl+b` `Ctrl+arrow` |
 | Swap panes | `Ctrl+b` `{` or `}` |
 | Rename pane title | `Ctrl+b` `:` `select-pane -T "title"` |
-| Clear pane title | `Ctrl+b` `:` `select-pane -T ""` |
-| Rename other pane | `Ctrl+b` `:` `select-pane -t 1 -T "title"` |
 
 ---
 
@@ -92,50 +95,9 @@ kill-window                      # kill current window
 kill-session                     # kill current session
 list-sessions                    # list all sessions
 list-windows                     # list windows in session
-```
-
----
-
-## Python Spawning Reference
-
-```python
-import subprocess
-
-SESSION = "agents"
-
-# Kill existing session (clean start)
-subprocess.run(["tmux", "kill-session", "-t", SESSION], stderr=subprocess.DEVNULL)
-
-# Create new session with first window
-subprocess.run([
-    "tmux", "new-session", "-d",
-    "-s", SESSION,
-    "-n", "orchestrator",
-    "echo 'Agent started'; exec bash"
-])
-
-# Add more windows to the session
-subprocess.run([
-    "tmux", "new-window",
-    "-t", SESSION,
-    "-n", "worker",
-    "echo 'Worker started'; exec bash"
-])
-
-# Send command to a running window
-subprocess.run([
-    "tmux", "send-keys",
-    "-t", f"{SESSION}:worker",
-    "echo 'Hello from Python'",
-    "Enter"
-])
-
-# Capture output from a pane
-result = subprocess.run(
-    ["tmux", "capture-pane", "-t", f"{SESSION}:worker", "-p"],
-    capture_output=True, text=True
-)
-print(result.stdout)
+capture-pane -t name -p          # print visible pane content
+capture-pane -t name -p -S -100  # last 100 lines of pane
+send-keys -t name "cmd" Enter    # type a command into another window
 ```
 
 ---
@@ -146,35 +108,55 @@ print(result.stdout)
 Sessions contain Windows contain Panes
 
 ┌─────────────────────────────────────────────┐
-│ Session: agents                             │
+│ Session: work                               │
 │ ┌─────────────┬─────────────┬─────────────┐ │
 │ │ Window 0    │ Window 1    │ Window 2    │ │
-│ │ orchestrator│ researcher  │ coder       │ │
+│ │ shell       │ refactor    │ tests       │ │
 │ │ ┌─────────┐ │             │ ┌────┬────┐ │ │
 │ │ │  pane   │ │   (single   │ │pane│pane│ │ │
 │ │ │         │ │    pane)    │ ├────┴────┤ │ │
-│ │ └─────────┘ │             │ │  pane     │ │
+│ │ │         │ │             │ │  pane     │ │
+│ │ └─────────┘ │             │ └─────────┘ │
 │ └─────────────┴─────────────┴─────────────┘ │
 └─────────────────────────────────────────────┘
 ```
 
 **Status bar anatomy:**
 ```
-[agents] 0:orchestrator  1:researcher  2:coder- 3:reviewer*
-   │           │              │            │          │
-   │           │              │            │          └─ * = current window
-   │           │              │            └─ - = last active window
-   │           └──────────────┴─ window number:name
+[work] 0:shell  1:refactor  2:tests* 3:review-
+   │        │         │          │        │
+   │        │         │          │        └─ * = current window
+   │        │         │          └─ - = last active window
+   │        └─────────┴─ window number:name
    └─ session name
 ```
 
 ---
 
-## Tips for Agent Development
+## Tips
 
-1. **Detach freely** — `Ctrl+b` `d` leaves everything running
-2. **One session per project** — keeps agents organized
-3. **Name your windows** — easier than remembering numbers
-4. **Use `send-keys`** — lets Python orchestrator communicate with agents
-5. **Use `capture-pane`** — lets Python read agent output
-6. **Zoom for focus** — `Ctrl+b` `z` toggles fullscreen on a pane
+1. **Detach freely** — `Ctrl+b d` leaves everything running.
+2. **Name your windows** — easier than remembering numbers.
+3. **Use `Ctrl+b '`** to jump to a window by name.
+4. **Zoom for focus** — `Ctrl+b z` toggles a pane fullscreen.
+5. **Capture before switching** — `tmux capture-pane -t sess:win -p -S -200`
+   saves the last 200 lines before you lose them off the screen.
+
+---
+
+## llmmux notes
+
+llmmux uses vanilla tmux — no server config, no custom prefix, no extra
+sockets. Your existing `~/.tmux.conf` keeps working. The two commands worth
+remembering alongside llmmux:
+
+```bash
+# What windows are in my llmmux session?
+tmux list-windows -t work -F '#{window_index}: #{window_name}'
+
+# Dump the last bit of an agent's output to a file
+tmux capture-pane -t work:refactor -p -S -500 > refactor.log
+
+# Type a follow-up into another agent's pane from your shell
+tmux send-keys -t work:refactor "stop and re-read tests/ first" Enter
+```
